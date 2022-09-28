@@ -36,6 +36,10 @@ dependencies:
   bitsdojo_window: ^0.1.1+1
   provider: ^6.0.3
   http: ^0.13.5
+  syncfusion_flutter_datagrid: ^20.2.50
+  intl: ^0.17.0
+  easy_localization: ^3.0.1
+  localization: ^2.1.0
 
 dev_dependencies:
   flutter_test:

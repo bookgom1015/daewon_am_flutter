@@ -25,9 +25,6 @@ class _PreferenceButtonState extends State<PreferenceButton> {
   late Color _iconNormal;
   late Color _iconMouseOver;
 
-  late Color _tooltipBackgroundColor;
-  late Color _tooltipForegroundColor;
-
   @override
   void initState() {
     super.initState();
@@ -74,8 +71,6 @@ class _PreferenceButtonState extends State<PreferenceButton> {
       iconNormal: _iconNormal,
       iconMouseOver: _iconMouseOver,
       tooltip: "설정",
-      tooltipBackground: _tooltipBackgroundColor,
-      tooltopForeground: _tooltipForegroundColor,
     );
   }
 
@@ -86,8 +81,5 @@ class _PreferenceButtonState extends State<PreferenceButton> {
     _mouseOver = ColorManager.getTitleBarButtonMouseOverBackgroundColor(themeType);
     _iconNormal = ColorManager.getTitleBarButtonIconColor(themeType);
     _iconMouseOver = ColorManager.getTitleBarButtonIconMouseOverColor(themeType);
-
-    _tooltipBackgroundColor = ColorManager.getTooltipBackgroundColor(themeType);
-    _tooltipForegroundColor = ColorManager.getTooltipForegroundColor(themeType);
   }
 }

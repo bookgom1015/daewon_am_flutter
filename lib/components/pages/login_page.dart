@@ -1,13 +1,15 @@
 import 'dart:convert';
 
-import 'package:daewon_am/components/color_manager.dart';
+import 'package:daewon_am/components/helpers/theme/color_manager.dart';
 import 'package:daewon_am/components/dialogs/ok_dialog.dart';
 import 'package:daewon_am/components/globals/global_routes.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
-import 'package:daewon_am/components/http/http_helper.dart';
+import 'package:daewon_am/components/helpers/http/http_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
 import 'package:daewon_am/components/widgets/buttons/mouse_reaction_button.dart';
+import 'package:daewon_am/components/widgets/buttons/mouse_reaction_icon_button.dart';
+import 'package:daewon_am/components/widgets/presets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -30,9 +32,11 @@ class _LoginPageState extends State<LoginPage> {
   late Color _underlineColor;
   late Color _underlineFocusedColor;
   late Color _underlineInvalidColor;
+  late Color _underlineInvalidFocusedColor;
   late Color _hintTextColor;
 
-  final TextEditingController _pwdController = TextEditingController();
+  final _idController = TextEditingController();
+  final _pwdController = TextEditingController();
 
   bool _visible = false;
 
@@ -50,6 +54,9 @@ class _LoginPageState extends State<LoginPage> {
     _themeModel = context.watch<ThemeSettingModel>();
     _userInfoModel = context.watch<UserInfoModel>();
 
+    _idController.text = _userId;
+    _pwdController.text = _userPwd;
+
     loadColors();
   }
 
@@ -63,7 +70,8 @@ class _LoginPageState extends State<LoginPage> {
           maxWidth: 800,
           maxHeight: 600
         ),
-        child: AnimatedContainer(
+        child: _loggingIn ? const LoadingIndicator() :
+        AnimatedContainer(
           duration: colorChangeDuration,
           curve: colorChangeCurve,
           margin: const EdgeInsets.all(25),
@@ -129,6 +137,7 @@ class _LoginPageState extends State<LoginPage> {
     _underlineColor = ColorManager.getTextFormFieldUnderlineColor(themeType);
     _underlineFocusedColor = ColorManager.getTextFormFieldUnderlineFocusedColor(themeType);
     _underlineInvalidColor = ColorManager.getTextFormFieldUnderlineInvalidColor(themeType);
+    _underlineInvalidFocusedColor = ColorManager.getTextFormFieldUnderlineInvalidFocusedColor(themeType);
     _hintTextColor = ColorManager.getHintTextColor(themeType);
   }
 
@@ -155,7 +164,9 @@ class _LoginPageState extends State<LoginPage> {
 
   void login() async {    
     if (!validate()) {
-      _loggingIn = false;
+      setState(() {
+        _loggingIn = false;
+      });
       return;
     }
 
@@ -163,7 +174,9 @@ class _LoginPageState extends State<LoginPage> {
       var priv = await HttpHelper.login(_userId, _userPwd);
 
       _userInfoModel.login(_userId, priv);
-      _loggingIn = false;
+      setState(() {
+        _loggingIn = false;
+      });
 
       Navigator.pushReplacementNamed(context, workspacePageRoute);
     }
@@ -174,7 +187,10 @@ class _LoginPageState extends State<LoginPage> {
         title: "오류",
         message: e.toString()
       );
-      _loggingIn = false;
+      setState(() {
+        _loggingIn = false;
+      });
+      _userPwd = "";
       _pwdController.clear();
       return;      
     }
@@ -182,6 +198,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget idTextFormFieldWidget() {
     return TextFormField(
+      controller: _idController,
       maxLength: 32,
       style: TextStyle(
         color: _foregroundColor,
@@ -195,7 +212,7 @@ class _LoginPageState extends State<LoginPage> {
           borderSide: BorderSide(color: _idIsValid ? _underlineColor : _underlineInvalidColor)
         ),
         focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: _idIsValid ? _underlineFocusedColor : _underlineInvalidColor)
+          borderSide: BorderSide(color: _idIsValid ? _underlineFocusedColor : _underlineInvalidFocusedColor)
         ),
         hintText: "아이디를 입력하세요",
         hintStyle: TextStyle(
@@ -223,21 +240,22 @@ class _LoginPageState extends State<LoginPage> {
           borderSide: BorderSide(color: _pwdIsValid ? _underlineColor : _underlineInvalidColor)
         ),
         focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: _pwdIsValid ? _underlineFocusedColor : _underlineInvalidColor)
+          borderSide: BorderSide(color: _pwdIsValid ? _underlineFocusedColor : _underlineInvalidFocusedColor)
         ),
         hintText: "패스워드를 입력하세요",
         hintStyle: TextStyle(
           color: _hintTextColor
         ),
         counterText: "",
-        suffixIcon: IconButton(
-          onPressed: () {
+        suffixIcon: MouseReactionIconButton(
+          onTap: () {
             setState(() {
               _visible = !_visible;
             });
           },
-          icon: Icon(_visible ? Icons.visibility : Icons.visibility_off),
-          color: _underlineColor,
+          icon: _visible ? Icons.visibility : Icons.visibility_off,
+          iconNormal: _underlineColor,
+          iconMouseOver: _underlineFocusedColor,
         )
       ),                        
     );

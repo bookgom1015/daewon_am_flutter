@@ -34,16 +34,14 @@ class _MouseReactionButtonState extends State<MouseReactionButton> {
   bool _hovering = false;
 
   @override
-  void initState() {
-    super.initState();
-
-    loadColors();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
     loadColors();
-
+    
     return MouseRegion(
       onEnter: (event) {
         setState(() {
@@ -57,6 +55,7 @@ class _MouseReactionButtonState extends State<MouseReactionButton> {
           _hovering = false;
         });
       },
+      cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(

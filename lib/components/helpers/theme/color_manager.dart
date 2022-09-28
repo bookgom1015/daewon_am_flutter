@@ -14,6 +14,17 @@ class ColorManager {
     }
   }
 
+  static Color getBackgroundTransparentColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkBackgroundTransparentColor;
+      case EThemeTypes.eLight:
+      return lightBackgroundTransparentColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
   static Color getForegroundColor(EThemeTypes themeType) {
     switch (themeType) {
       case EThemeTypes.eDark:
@@ -47,12 +58,56 @@ class ColorManager {
     }
   }
 
+  static Color getLayerTransparentBackgroundColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkLayerTransparentBackgroundColor;
+      case EThemeTypes.eLight:
+      return lightLayerTransparentBackgroundColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
   static Color getWidgetBackgroundColor(EThemeTypes themeType) {
     switch (themeType) {
       case EThemeTypes.eDark:
       return darkWidgetBackgroundColor;
       case EThemeTypes.eLight:
       return lightWidgetBackgroundColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getWidgetBackgroundMouseOverColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkWidgetBackgroundMouseOverColor;
+      case EThemeTypes.eLight:
+      return lightWidgetBackgroundMouseOverColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getWidgetIconForegroundColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkWidgetIconForegroundColor;
+      case EThemeTypes.eLight:
+      return lightWidgetIconForegroundColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getWidgetIconForegroundMouseOverColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkWidgetIconForegroundMouseOverColor;
+      case EThemeTypes.eLight:
+      return lightWidgetIconForegroundMouseOverColor;
       default:
       return Colors.transparent;
     }
@@ -190,6 +245,17 @@ class ColorManager {
     }
   }
 
+  static Color getTextFormFieldUnderlineInvalidFocusedColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkTextFormFieldUnderlineInvalidFocusedColor;
+      case EThemeTypes.eLight:
+      return lightTextFormFieldUnderlineInvalidFocusedColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
   static Color getHintTextColor(EThemeTypes themeType) {
     switch (themeType) {
       case EThemeTypes.eDark:
@@ -242,6 +308,35 @@ class ColorManager {
       return lightTooltipBackgroundColor;
       default:
       return Colors.transparent;
+    }
+  }
+
+  static Color getDatePickerDialogBackgroundColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkDatePickerDialogBackgroundColor;
+      case EThemeTypes.eLight:
+      return lightDatePickerDialogBackgroundColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static ColorScheme getDatePickerColorScheme(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return const ColorScheme.dark(
+        primary: darkIdentityColor,
+        onPrimary: Colors.white,
+        surface: Color.fromARGB(255, 44, 44, 44),    
+      );
+      case EThemeTypes.eLight:
+      return const ColorScheme.light(
+        primary: lightIdentityColor,
+        onPrimary: Colors.black,
+      );
+      default:
+      return const ColorScheme.light();
     }
   }
 }

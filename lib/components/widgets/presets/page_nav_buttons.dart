@@ -1,12 +1,9 @@
 import 'package:daewon_am/components/helpers/theme/color_manager.dart';
-import 'package:daewon_am/components/enums/privileges.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
 import 'package:daewon_am/components/models/page_control_model.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
-import 'package:daewon_am/components/widgets/buttons/mouse_reaction_button.dart';
 import 'package:daewon_am/components/widgets/buttons/mouse_reaction_icon_button.dart';
-import 'package:daewon_am/components/widgets/buttons/page_nav_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,7 +16,6 @@ class PageNavButtons extends StatefulWidget {
 
 class _PageNavButtonsState extends State<PageNavButtons> {
   late ThemeSettingModel _themeModel;
-  late UserInfoModel _userInfoModel;
   late PageControlModel _pageControlModel;
 
   late PageController _pageController;
@@ -29,16 +25,12 @@ class _PageNavButtonsState extends State<PageNavButtons> {
   late Color _iconNormal;
   late Color _iconMouseOver;
 
-  late Color _tooltipBackgroundColor;
-  late Color _tooltipForegroundColor;
-
   //late List<Widget> _pageNavButtons;
   
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _themeModel = context.watch<ThemeSettingModel>();
-    _userInfoModel = context.watch<UserInfoModel>();
     _pageControlModel = context.watch<PageControlModel>();
 
     _pageController = _pageControlModel.getPageController();
@@ -95,8 +87,6 @@ class _PageNavButtonsState extends State<PageNavButtons> {
       icon: icon,
       iconSize: iconSize,
       tooltip: tooltip,
-      tooltipBackground: _tooltipBackgroundColor,
-      tooltopForeground: _tooltipForegroundColor,
     );
   }
 
@@ -107,8 +97,5 @@ class _PageNavButtonsState extends State<PageNavButtons> {
     _mouseOver = ColorManager.getIdentityMouseOverColor(themeType);
     _iconNormal = ColorManager.getForegroundColor(themeType);
     _iconMouseOver = ColorManager.getForegroundColor(themeType);
-
-    _tooltipBackgroundColor = ColorManager.getTooltipBackgroundColor(themeType);
-    _tooltipForegroundColor = ColorManager.getTooltipForegroundColor(themeType);
   }
 }

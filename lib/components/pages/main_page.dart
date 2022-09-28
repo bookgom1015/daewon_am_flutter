@@ -7,7 +7,7 @@ import 'package:daewon_am/components/pages/login_page.dart';
 import 'package:daewon_am/components/pages/workspace_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:daewon_am/components/color_manager.dart';
+import 'package:daewon_am/components/helpers/theme/color_manager.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/widgets/presets/page_nav_buttons.dart';
 import 'package:daewon_am/components/widgets/buttons/preference_button.dart';

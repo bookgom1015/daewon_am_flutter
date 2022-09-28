@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 const Color darkBackgroundColor = Color.fromARGB(255, 70, 70, 70);
 const Color lightBackgroundColor = Color.fromARGB(255, 235, 235, 235);
 
+const Color darkBackgroundTransparentColor = Color.fromARGB(0, 70, 70, 70);
+const Color lightBackgroundTransparentColor = Color.fromARGB(0, 235, 235, 235);
+
 const Color darkForegroundColor = Colors.white;
 const Color lightForegroundColor = Colors.black;
 
@@ -36,8 +39,20 @@ const Color lightIdentityMouseOverColor = Color.fromARGB(255, 245, 112, 23);
 const Color darkLayerBackgroundColor = Color.fromARGB(255, 56, 56, 56);
 const Color lightLayerBackgroundColor = Color.fromARGB(255, 255, 255, 255);
 
+const Color darkLayerTransparentBackgroundColor = Color.fromARGB(0, 56, 56, 56);
+const Color lightLayerTransparentBackgroundColor = Color.fromARGB(0, 255, 255, 255);
+
 const Color darkWidgetBackgroundColor = Color.fromARGB(255, 87, 87, 87);
 const Color lightWidgetBackgroundColor = Color.fromARGB(255, 245, 245, 245);
+
+const Color darkWidgetBackgroundMouseOverColor = Color.fromARGB(255, 141, 141, 141);
+const Color lightWidgetBackgroundMouseOverColor = Color.fromARGB(255, 221, 221, 221);
+
+const Color darkWidgetIconForegroundColor = Color.fromARGB(255, 129, 129, 129);
+const Color lightWidgetIconForegroundColor = Color.fromARGB(255, 175, 175, 175);
+
+const Color darkWidgetIconForegroundMouseOverColor = Color.fromARGB(255, 255, 255, 255);
+const Color lightWidgetIconForegroundMouseOverColor = Color.fromARGB(255, 0, 0, 0);
 
 const Color darkPreferenceBackgroundColor = Color.fromARGB(255, 56, 56, 56);
 const Color lightPreferenceBackgroundColor = Color.fromARGB(255, 240, 240, 240);
@@ -51,8 +66,11 @@ const Color lightTextFormFieldUnderlineColor = Color.fromARGB(255, 221, 221, 221
 const Color darkTextFormFieldUnderlineFocusedColor = Color.fromARGB(255, 214, 214, 214);
 const Color lightTextFormFieldUnderlineFocusedColor = Color.fromARGB(255, 126, 126, 126);
 
-const Color darkTextFormFieldUnderlineInvalidColor = Color.fromARGB(255, 255, 0, 0);
-const Color lightTextFormFieldUnderlineInvalidColor = Color.fromARGB(255, 255, 0, 0);
+const Color darkTextFormFieldUnderlineInvalidColor = Color.fromARGB(255, 180, 0, 0);
+const Color lightTextFormFieldUnderlineInvalidColor = Color.fromARGB(255, 180, 0, 0);
+
+const Color darkTextFormFieldUnderlineInvalidFocusedColor = Color.fromARGB(255, 255, 0, 0);
+const Color lightTextFormFieldUnderlineInvalidFocusedColor = Color.fromARGB(255, 255, 0, 0);
 
 const Color darkHintTextColor = Color.fromARGB(255, 112, 112, 112);
 const Color lightHintTextColor = Color.fromARGB(255, 221, 221, 221);
@@ -68,6 +86,9 @@ const Color lightTooltipForegroundColor = Colors.black;
 
 const Color darkTooltipBackgroundColor = Color.fromARGB(255, 87, 87, 87);
 const Color lightTooltipBackgroundColor = Color.fromARGB(255, 245, 245, 245);
+
+const Color darkDatePickerDialogBackgroundColor = Color.fromARGB(255, 53, 53, 53);
+const Color lightDatePickerDialogBackgroundColor = Color.fromARGB(255, 250, 250, 250);
 
 const Duration colorChangeDuration = Duration(milliseconds: 200);
 const Curve colorChangeCurve = Curves.easeOutQuart;

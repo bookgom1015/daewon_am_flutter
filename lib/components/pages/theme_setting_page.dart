@@ -1,4 +1,4 @@
-import 'package:daewon_am/components/color_manager.dart';
+import 'package:daewon_am/components/helpers/theme/color_manager.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/enums/theme_types.dart';

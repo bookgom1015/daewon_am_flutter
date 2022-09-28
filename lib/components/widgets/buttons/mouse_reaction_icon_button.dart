@@ -1,5 +1,8 @@
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
+import 'package:daewon_am/components/helpers/theme/color_manager.dart';
+import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class MouseReactionIconButton extends StatefulWidget {
   final double? width;
@@ -15,9 +18,7 @@ class MouseReactionIconButton extends StatefulWidget {
   final Color? iconMouseOver;
   final IconData? icon;
   final double? iconSize;
-  final String tooltip; 
-  final Color? tooltipBackground;
-  final Color? tooltopForeground; 
+  final String tooltip;
   final void Function() onTap;
 
   const MouseReactionIconButton({
@@ -36,8 +37,6 @@ class MouseReactionIconButton extends StatefulWidget {
     this.icon,
     this.iconSize,
     this.tooltip = "",
-    this.tooltipBackground,
-    this.tooltopForeground,
     required this.onTap}) : super(key: key);
 
   @override
@@ -46,21 +45,25 @@ class MouseReactionIconButton extends StatefulWidget {
 }
 
 class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
+  late ThemeSettingModel _themeModel;
+
+  late Color _tooltipBackgroundColor;
+  late Color _tooltipForegroundColor;
+
   late Color? _color;
   late Color? _iconColor;
   bool _hovering = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _themeModel = context.watch<ThemeSettingModel>();
 
     loadColors();
   }
 
   @override
   Widget build(BuildContext context) {
-    loadColors();
-
     return MouseRegion(
       onEnter: (event) {
         setState(() {
@@ -76,16 +79,17 @@ class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
           _hovering = false;
         });
       },
+      cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
         child: Tooltip(
           message: widget.tooltip,
           waitDuration: tooltipWaitDuration,
           decoration: BoxDecoration(
-            color: widget.tooltipBackground,
+            color: _tooltipBackgroundColor,
           ),
           textStyle: TextStyle(
-            color: widget.tooltopForeground,
+            color: _tooltipForegroundColor,
           ),
           child: AnimatedContainer(
             duration: widget.duration,
@@ -110,6 +114,11 @@ class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
   }
 
   void loadColors() {
+    var themeType = _themeModel.getThemeType();
+
+    _tooltipBackgroundColor = ColorManager.getTooltipBackgroundColor(themeType);
+    _tooltipForegroundColor = ColorManager.getTooltipForegroundColor(themeType);
+
     _color = _hovering ? widget.mouseOver : widget.normal;    
     _iconColor = _hovering ? widget.iconMouseOver : widget.iconNormal;
   }

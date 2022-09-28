@@ -5,6 +5,7 @@ import 'package:daewon_am/components/pages/main_page.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   runApp(const DaewonApp());
@@ -18,6 +19,14 @@ class DaewonApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale("ko", "KR"),
+      ],
       home: Scaffold(
         body: MultiProvider(
           providers: [
