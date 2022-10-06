@@ -4,22 +4,22 @@ import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class OkDialog extends StatefulWidget {
+class OkCancelDialog extends StatefulWidget {
   final String title;
   final String message;
-  final void Function()? onPressed;
+  final void Function() onPressed;
 
-  const OkDialog({
+  const OkCancelDialog({
     Key? key,
     required this.title,
     required this.message,
-    this.onPressed}) : super(key: key);
+    required this.onPressed}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _OkDialogState();
+  State<StatefulWidget> createState() => _OkCancelDialogState();
 }
 
-class _OkDialogState extends State<OkDialog> {
+class _OkCancelDialogState extends State<OkCancelDialog> {
   late ThemeSettingModel _themeModel;
 
   late Color _normal;
@@ -85,8 +85,21 @@ class _OkDialogState extends State<OkDialog> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   WidgetHelper.dialogButton(
-                    onPressed: onTap,
+                    onPressed: () {
+                      widget.onPressed();
+                      Navigator.of(context).pop();
+                    },
                     label: "확인",
+                    normal: _normal,
+                    mouseOver: _mouseOver,                    
+                    fontColor: _foregroundColor,
+                  ),
+                  const SizedBox(width: 5),
+                  WidgetHelper.dialogButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    label: "취소",
                     normal: _normal,
                     mouseOver: _mouseOver,                    
                     fontColor: _foregroundColor,
@@ -108,26 +121,21 @@ class _OkDialogState extends State<OkDialog> {
     _backgroundColor = ColorManager.getBackgroundColor(themeType);
     _foregroundColor = ColorManager.getForegroundColor(themeType);
   }
-
-  void onTap() {
-    if (widget.onPressed != null) widget.onPressed!();
-    Navigator.of(context).pop();
-  }
 }
 
-void showOkDialog({
+void showOkCancelDialog({
   required BuildContext context, 
   required ThemeSettingModel themeModel, 
+  required void Function() onPressed,
   String title = "", 
-  String message = "",
-  void Function()? onPressed,
-}) {
+  String message = ""}
+) {
   showDialog(
     context: context, 
     barrierDismissible: false,
     builder: (_) => ChangeNotifierProvider.value(
       value: themeModel,
-      child: OkDialog(
+      child: OkCancelDialog(
         title: title,
         message: message,
         onPressed: onPressed,

@@ -1,6 +1,4 @@
-import 'dart:math';
-
-import 'package:daewon_am/components/helpers/theme/color_manager.dart';
+import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -37,7 +35,7 @@ class _PingPongWidget extends State<PingPongWidget> with SingleTickerProviderSta
   bool _changed = false;
   late int _index;
 
-  late Color _foregroundColor;
+  late Color _indicatorColor;
 
   @override
   void initState() {
@@ -127,7 +125,7 @@ class _PingPongWidget extends State<PingPongWidget> with SingleTickerProviderSta
             child: Icon(
               _icon,
               size: _size,
-              color: _foregroundColor,
+              color: _indicatorColor,
             ),
           ),
         );
@@ -138,7 +136,7 @@ class _PingPongWidget extends State<PingPongWidget> with SingleTickerProviderSta
   void loadColors() {
     var themeType = _themeModel.getThemeType();
 
-    _foregroundColor = ColorManager.getForegroundColor(themeType);
+    _indicatorColor = ColorManager.getLoadingIndicatorColor(themeType);
   }
 
   void callback() {

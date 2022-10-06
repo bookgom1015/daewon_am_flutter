@@ -9,6 +9,8 @@ class ColorManager {
       return darkBackgroundColor;
       case EThemeTypes.eLight:
       return lightBackgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueBackgroundColor;
       default:
       return Colors.transparent;
     }
@@ -20,6 +22,8 @@ class ColorManager {
       return darkBackgroundTransparentColor;
       case EThemeTypes.eLight:
       return lightBackgroundTransparentColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueBackgroundTransparentColor;
       default:
       return Colors.transparent;
     }
@@ -31,6 +35,8 @@ class ColorManager {
       return darkForegroundColor;
       case EThemeTypes.eLight:
       return lightForegroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueForegroundColor;
       default:
       return Colors.transparent;
     }
@@ -42,6 +48,8 @@ class ColorManager {
       return darkIdentityColor;
       case EThemeTypes.eLight:
       return lightIdentityColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueIdentityColor;
       default:
       return Colors.transparent;
     }
@@ -53,6 +61,8 @@ class ColorManager {
       return darkLayerBackgroundColor;
       case EThemeTypes.eLight:
       return lightLayerBackgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueLayerBackgroundColor;
       default:
       return Colors.transparent;
     }
@@ -64,6 +74,8 @@ class ColorManager {
       return darkLayerTransparentBackgroundColor;
       case EThemeTypes.eLight:
       return lightLayerTransparentBackgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueLayerTransparentBackgroundColor;
       default:
       return Colors.transparent;
     }
@@ -75,6 +87,21 @@ class ColorManager {
       return darkWidgetBackgroundColor;
       case EThemeTypes.eLight:
       return lightWidgetBackgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueWidgetBackgroundColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getWidgetBackgroundTransparentColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkWidgetBackgroundTransparentColor;
+      case EThemeTypes.eLight:
+      return lightWidgetBackgroundTransparentColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueWidgetBackgroundTransparentColor;
       default:
       return Colors.transparent;
     }
@@ -86,6 +113,8 @@ class ColorManager {
       return darkWidgetBackgroundMouseOverColor;
       case EThemeTypes.eLight:
       return lightWidgetBackgroundMouseOverColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueWidgetBackgroundMouseOverColor;
       default:
       return Colors.transparent;
     }
@@ -97,6 +126,8 @@ class ColorManager {
       return darkWidgetIconForegroundColor;
       case EThemeTypes.eLight:
       return lightWidgetIconForegroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueWidgetIconForegroundColor;
       default:
       return Colors.transparent;
     }
@@ -108,6 +139,8 @@ class ColorManager {
       return darkWidgetIconForegroundMouseOverColor;
       case EThemeTypes.eLight:
       return lightWidgetIconForegroundMouseOverColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueWidgetIconForegroundMouseOverColor;
       default:
       return Colors.transparent;
     }
@@ -119,6 +152,8 @@ class ColorManager {
       return darkIdentityMouseOverColor;
       case EThemeTypes.eLight:
       return lightIdentityMouseOverColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueIdentityMouseOverColor;
       default:
       return Colors.transparent;
     }
@@ -130,6 +165,8 @@ class ColorManager {
       return darkTitleBarButtonIconColor;
       case EThemeTypes.eLight:
       return lightTitleBarButtonIconColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueTitleBarButtonIconColor;
       default:
       return Colors.transparent;
     }
@@ -141,6 +178,8 @@ class ColorManager {
       return darkTitleBarButtonIconMouseOverColor;
       case EThemeTypes.eLight:
       return lightTitleBarButtonIconMouseOverColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueTitleBarButtonIconMouseOverColor;
       default:
       return Colors.transparent;
     }
@@ -152,6 +191,8 @@ class ColorManager {
       return darkTitleBarButtonMouseOverBackgroundColor;
       case EThemeTypes.eLight:
       return lightTitleBarButtonMouseOverBackgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueTitleBarButtonMouseOverBackgroundColor;
       default:
       return Colors.transparent;
     }
@@ -163,6 +204,8 @@ class ColorManager {
       return darkTitleBarButtonMouseDownBackgroundColor;
       case EThemeTypes.eLight:
       return lightTitleBarButtonMouseDownBackgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueTitleBarButtonMouseDownBackgroundColor;
       default:
       return Colors.transparent;
     }
@@ -174,6 +217,8 @@ class ColorManager {
       return darkTitleBarCloseButtonMouseOverBackgroundColor;
       case EThemeTypes.eLight:
       return lightTitleBarCloseButtonMouseOverBackgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueTitleBarCloseButtonMouseOverBackgroundColor;
       default:
       return Colors.transparent;
     }
@@ -185,6 +230,8 @@ class ColorManager {
       return darkTitleBarCloseButtonMouseDownBackgroundColor;
       case EThemeTypes.eLight:
       return lightTitleBarCloseButtonMouseDownBackgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueTitleBarCloseButtonMouseDownBackgroundColor;
       default:
       return Colors.transparent;
     }
@@ -196,6 +243,21 @@ class ColorManager {
       return darkPreferenceBackgroundColor;
       case EThemeTypes.eLight:
       return lightPreferenceBackgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBluePreferenceBackgroundColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getPreferenceBackgroundTransparentColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkPreferenceBackgroundTransparentColor;
+      case EThemeTypes.eLight:
+      return lightPreferenceBackgroundTransparentColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBluePreferenceBackgroundTransparentColor;
       default:
       return Colors.transparent;
     }
@@ -207,6 +269,8 @@ class ColorManager {
       return darkPreferenceUnderlineBakcgroundColor;
       case EThemeTypes.eLight:
       return lightPreferenceUnderlineBakcgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBluePreferenceUnderlineBakcgroundColor;
       default:
       return Colors.transparent;
     }
@@ -218,6 +282,8 @@ class ColorManager {
       return darkTextFormFieldUnderlineColor;
       case EThemeTypes.eLight:
       return lightTextFormFieldUnderlineColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueTextFormFieldUnderlineColor;
       default:
       return Colors.transparent;
     }
@@ -229,6 +295,8 @@ class ColorManager {
       return darkTextFormFieldUnderlineFocusedColor;
       case EThemeTypes.eLight:
       return lightTextFormFieldUnderlineFocusedColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueTextFormFieldUnderlineFocusedColor;
       default:
       return Colors.transparent;
     }
@@ -240,6 +308,8 @@ class ColorManager {
       return darkTextFormFieldUnderlineInvalidColor;
       case EThemeTypes.eLight:
       return lightTextFormFieldUnderlineInvalidColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueTextFormFieldUnderlineInvalidColor;
       default:
       return Colors.transparent;
     }
@@ -251,6 +321,8 @@ class ColorManager {
       return darkTextFormFieldUnderlineInvalidFocusedColor;
       case EThemeTypes.eLight:
       return lightTextFormFieldUnderlineInvalidFocusedColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueTextFormFieldUnderlineInvalidFocusedColor;
       default:
       return Colors.transparent;
     }
@@ -262,6 +334,8 @@ class ColorManager {
       return darkHintTextColor;
       case EThemeTypes.eLight:
       return lightHintTextColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueHintTextColor;
       default:
       return Colors.transparent;
     }
@@ -273,6 +347,8 @@ class ColorManager {
       return darkLogoutButtonBackgroundColor;
       case EThemeTypes.eLight:
       return lightLogoutButtonBackgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueLogoutButtonBackgroundColor;
       default:
       return Colors.transparent;
     }
@@ -284,6 +360,8 @@ class ColorManager {
       return darkLogoutButtonBackgroundMouseOverColor;
       case EThemeTypes.eLight:
       return lightLogoutButtonBackgroundMouseOverColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueLogoutButtonBackgroundMouseOverColor;
       default:
       return Colors.transparent;
     }
@@ -295,6 +373,8 @@ class ColorManager {
       return darkTooltipForegroundColor;
       case EThemeTypes.eLight:
       return lightTooltipForegroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueTooltipForegroundColor;
       default:
       return Colors.transparent;
     }
@@ -306,6 +386,8 @@ class ColorManager {
       return darkTooltipBackgroundColor;
       case EThemeTypes.eLight:
       return lightTooltipBackgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueTooltipBackgroundColor;
       default:
       return Colors.transparent;
     }
@@ -317,6 +399,138 @@ class ColorManager {
       return darkDatePickerDialogBackgroundColor;
       case EThemeTypes.eLight:
       return lightDatePickerDialogBackgroundColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueDatePickerDialogBackgroundColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getDataGridLineColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkDataGridLineColor;
+      case EThemeTypes.eLight:
+      return lightDataGridLineColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueDataGridLineColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getDataGridRowHoverColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkDataGridRowHoverColor;
+      case EThemeTypes.eLight:
+      return lightDataGridRowHoverColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueDataGridRowHoverColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getDataGridSelectionColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkDataGridSelectionColor;
+      case EThemeTypes.eLight:
+      return lightDataGridSelectionColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueDataGridSelectionColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getCursorColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkCursorColor;
+      case EThemeTypes.eLight:
+      return lightCursorColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueCursorColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getLoadingIndicatorColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkLoadingIndicatorColor;
+      case EThemeTypes.eLight:
+      return lightLoadingIndicatorColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueLoadingIndicatorColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getChartLabelColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkChartLabelColor;
+      case EThemeTypes.eLight:
+      return lightChartLabelColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueChartLabelColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getChartXAxisColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkChartXAxisColor;
+      case EThemeTypes.eLight:
+      return lightChartXAxisColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueChartXAxisColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getChartYAxisColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkChartYAxisColor;
+      case EThemeTypes.eLight:
+      return lightChartYAxisColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueChartYAxisColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getChartOutcomeColumnColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkChartOutcomeColumnColor;
+      case EThemeTypes.eLight:
+      return lightChartOutcomeColumnColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueChartOutcomeColumnColor;
+      default:
+      return Colors.transparent;
+    }
+  }
+
+  static Color getChartIncomeColumnColor(EThemeTypes themeType) {
+    switch (themeType) {
+      case EThemeTypes.eDark:
+      return darkChartIncomeColumnColor;
+      case EThemeTypes.eLight:
+      return lightChartIncomeColumnColor;
+      case EThemeTypes.ePinkBlue:
+      return pinkBlueChartIncomeColumnColor;
       default:
       return Colors.transparent;
     }
@@ -336,7 +550,10 @@ class ColorManager {
         onPrimary: Colors.black,
       );
       default:
-      return const ColorScheme.light();
+      return const ColorScheme.light(
+        primary: pinkBlueIdentityColor,
+        onPrimary: Colors.black
+      );
     }
   }
 }

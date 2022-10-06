@@ -40,7 +40,7 @@ class AccountingData {
 
   @override
   String toString() {
-    var sb = StringBuffer();
+    final sb = StringBuffer();
     sb.write("{ \"uid\" : ");                sb.write(uid);
     sb.write(", \"client_name\" : ");       sb.write("\"$clientName\"");
     sb.write(", \"date\" : ");              sb.write("\"$date\"");

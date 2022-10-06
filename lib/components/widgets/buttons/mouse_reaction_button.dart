@@ -42,32 +42,35 @@ class _MouseReactionButtonState extends State<MouseReactionButton> {
   Widget build(BuildContext context) {
     loadColors();
     
-    return MouseRegion(
-      onEnter: (event) {
-        setState(() {
-          _color = widget.mouseOver;
-          _hovering = true;
-        });
-      },
-      onExit: (event) {
-        setState(() {
-          _color = widget.normal;
-          _hovering = false;
-        });
-      },
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: widget.duration,
-          curve: widget.curve,
-          width: widget.width,
-          height: widget.height,
-          decoration: BoxDecoration(
-            borderRadius: widget.borderRadius,
-            color: _color
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        borderRadius: widget.borderRadius,
+      ),
+      child: MouseRegion(
+        onEnter: (event) {
+          setState(() {
+            _color = widget.mouseOver;
+            _hovering = true;
+          });
+        },
+        onExit: (event) {
+          setState(() {
+            _color = widget.normal;
+            _hovering = false;
+          });
+        },
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: widget.duration,
+            curve: widget.curve,
+            color: _color,
+            child: widget.child,
           ),
-          child: widget.child,
         ),
       ),
     );

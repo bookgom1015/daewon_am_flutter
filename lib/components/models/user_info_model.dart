@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class UserInfoModel with ChangeNotifier {
   String _userId = "";
   bool _loggedIn = false;
-  EPrivileges _privileges = EPrivileges.eObserver;
+  EPrivileges _privileges = EPrivileges.eNone;
 
   bool getLoggedIn() {
     return _loggedIn;
@@ -24,7 +24,7 @@ class UserInfoModel with ChangeNotifier {
   void logout() {
     _userId = "";
     _loggedIn = false;
-    _privileges = EPrivileges.eObserver;
+    _privileges = EPrivileges.eNone;
     notifyListeners();    
   }
 

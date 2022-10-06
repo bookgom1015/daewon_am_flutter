@@ -1,6 +1,10 @@
-import 'package:daewon_am/components/helpers/theme/color_manager.dart';
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/globals/global_routes.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
+import 'package:daewon_am/components/helpers/setting_manager.dart';
 import 'package:daewon_am/components/models/page_control_model.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
@@ -25,6 +29,8 @@ class _MyPageState extends State<MyPage> {
 
   late Color _foregroundColor;
   late Color _widgetColor;
+
+  bool _loggingOut = false;
 
   @override
   void didChangeDependencies() {
@@ -72,15 +78,7 @@ class _MyPageState extends State<MyPage> {
           ),
           const SizedBox(height: 40),
           MouseReactionButton(
-            onTap: () {
-              _userInfoModel.logout();
-              Navigator.of(context).pop();
-
-              var state = _pageControlModel.getNavigatorState();
-              if (state != null) {
-                Navigator.pushNamedAndRemoveUntil(state.context, loginPageRoute, (route) => false);
-              }
-            },
+            onTap: logout,
             width: 100,
             height: 40,
             borderRadius: BorderRadius.circular(8),
@@ -104,11 +102,32 @@ class _MyPageState extends State<MyPage> {
   }
 
   void loadColors() {
-    var themeType = _themeModel.getThemeType();
+    final themeType = _themeModel.getThemeType();
 
     _normal = ColorManager.getLogoutButtonBackgroundColor(themeType);
     _mouseOver = ColorManager.getLogoutButtonBackgroundMouseOverColor(themeType);
     _foregroundColor = ColorManager.getForegroundColor(themeType);
     _widgetColor = ColorManager.getWidgetBackgroundColor(themeType);
+  }
+
+  void logout() {
+    if (_loggingOut) return;
+    _loggingOut = true;
+    _userInfoModel.logout();
+    final settingFileFuture = SettingManager.getSettingFile();
+    settingFileFuture.then((settingFile) {
+      final fileStrFutue = settingFile.readAsString();
+      fileStrFutue.then((fileStr) {
+        final settingJson = jsonDecode(fileStr);
+        settingJson[SettingManager.userIdKey] = null;
+        settingJson[SettingManager.userPwdKey] = null;
+        final finished = settingFile.writeAsString(jsonEncode(settingJson));
+        finished.then((value) {
+          Navigator.of(context).pop();
+          final state = _pageControlModel.getNavigatorState();
+          if (state != null) Navigator.pushNamedAndRemoveUntil(state.context, loginPageRoute, (route) => false);
+        });
+      });
+    });
   }
 }

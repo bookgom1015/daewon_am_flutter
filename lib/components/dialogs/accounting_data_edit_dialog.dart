@@ -1,7 +1,7 @@
 import 'package:daewon_am/components/entries/accounting_data.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
-import 'package:daewon_am/components/helpers.dart';
-import 'package:daewon_am/components/helpers/theme/color_manager.dart';
+import 'package:daewon_am/components/helpers/color_manager.dart';
+import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/widgets/buttons/mouse_reaction_button.dart';
 import 'package:daewon_am/components/widgets/date_pickers/simple_date_picker.dart';
@@ -50,7 +50,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
   late List<TextInputFormatter> _onlyDidgitInputFormatter;
 
   late String title;
-  late String buttonTitle;
+  late String buttonLabel;
 
   final _clientNameTextEditingController = TextEditingController();
   final _steelWeightTextEditingController = TextEditingController();
@@ -70,17 +70,17 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
 
     if (widget.data == null) {      
       title = "데이터 추가";
-      buttonTitle = "추가";    
+      buttonLabel = "추가";    
 
-      var now = DateTime.now();
+      final now = DateTime.now();
       _date = now;
       _depositDate = now;
     }
     else {
       title = "데이터 수정";
-      buttonTitle = "수정";
+      buttonLabel = "수정";
 
-      var data = widget.data!;
+      final data = widget.data!;
       _clientNameTextEditingController.text = data.clientName;
       _steelWeightTextEditingController.text  = data.steelWeight.toString();
       _supplyPriceTextEditingController.text = data.supplyPrice.toString();
@@ -294,7 +294,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
                             padding: const EdgeInsets.only(left: 5),
                             child: Row(
                               children: [
-                                checkBoxWidget(
+                                WidgetHelper.checkBoxWidget(
                                   onChanged: (value) {
                                     if (value == null) return;                                  
                                     setState(() {
@@ -302,6 +302,9 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
                                     });     
                                   },
                                   value: _dataType,
+                                  borderColor: _foregroundColor,
+                                  activeColor: _identityColor,
+                                  checkColor: _foregroundColor,
                                 ),
                                 const SizedBox(width: 5),
                                 Text(
@@ -317,7 +320,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
                   ),
                   Align(
                     alignment: Alignment.topCenter,
-                    child: createFadeOut(
+                    child: WidgetHelper.fadeOutWidget(
                       length: 10,
                       fromColor: _backgroundColor,
                       toColor: _backgroundTransparentColor
@@ -325,7 +328,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,
-                    child: createFadeOut(
+                    child: WidgetHelper.fadeOutWidget(
                       length: 10,
                       fromColor: _backgroundTransparentColor,
                       toColor: _backgroundColor
@@ -334,45 +337,26 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
                 ],
               )
             ),
-            Container(
+            SizedBox(
               height: 50,
-              color: Colors.transparent,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  MouseReactionButton(
-                    onTap: onOkButtonPressed,
-                    width: 100,
-                    height: 36,
-                    borderRadius: BorderRadius.circular(8),
-                    duration: colorChangeDuration,
-                    curve: colorChangeCurve,
+                  WidgetHelper.dialogButton(
+                    onPressed: onOkButtonPressed,
+                    label: buttonLabel,
                     normal: _normal,
-                    mouseOver: _mouseOver,
-                    child: Center(
-                      child: Text(
-                        buttonTitle,
-                        style: _textStyle,
-                      ),
-                    ),
-                  ),
+                    mouseOver: _mouseOver,                    
+                    fontColor: _foregroundColor,
+                  ),                  
                   const  SizedBox(width: 5),
-                  MouseReactionButton(
-                    onTap: onCancelButtonPressed,
-                    width: 100,
-                    height: 36,
-                    borderRadius: BorderRadius.circular(8),
-                    duration: colorChangeDuration,
-                    curve: colorChangeCurve,
+                  WidgetHelper.dialogButton(
+                    onPressed: onCancelButtonPressed,
+                    label: "취소",
                     normal: _normal,
-                    mouseOver: _mouseOver,
-                    child: Center(
-                      child: Text(
-                        "취소",
-                        style: _textStyle,
-                      ),
-                    ),
+                    mouseOver: _mouseOver,                    
+                    fontColor: _foregroundColor,
                   ),
                 ],
               ),
@@ -384,7 +368,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
   }
 
   void loadColors() {
-    var themeType = _themeModel.getThemeType();
+    final themeType = _themeModel.getThemeType();
 
     _backgroundColor = ColorManager.getLayerBackgroundColor(themeType);
     _backgroundTransparentColor = ColorManager.getLayerTransparentBackgroundColor(themeType);
@@ -406,7 +390,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
 
   void onOkButtonPressed() {
     if (!validate()) return;
-    var data = AccountingData(
+    final data = AccountingData(
       uid: widget.data == null ? null : widget.data!.uid,
       clientName: _clientNameTextEditingController.text, 
       date: _date, 

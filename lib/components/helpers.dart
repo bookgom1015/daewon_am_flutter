@@ -6,23 +6,6 @@ Size getSize(GlobalKey key) {
   return renderBox.size;
 }
 
-Widget createFadeOut({double length = 0, Color fromColor = Colors.transparent, Color toColor = Colors.transparent, bool horizontal = false}) {
-  return Container(
-    width: horizontal ? length : null,
-    height: horizontal ? null : length,
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: horizontal ? Alignment.centerLeft : Alignment.topCenter,
-        end: horizontal ? Alignment.centerRight : Alignment.bottomCenter,
-        colors: [
-          fromColor,
-          toColor,
-        ]
-      )
-    )
-  );
-}
-
 Future<DateTime?> showDatePickerExt({
   required BuildContext context,
   required DateTime initialDate,

@@ -1,5 +1,5 @@
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
-import 'package:daewon_am/components/helpers/theme/color_manager.dart';
+import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -64,48 +64,52 @@ class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (event) {
-        setState(() {
-          _color = widget.mouseOver;
-          _iconColor = widget.iconMouseOver;
-          _hovering = true;
-        });
-      },
-      onExit: (event) {
-        setState(() {
-          _color = widget.normal;
-          _iconColor = widget.iconNormal;
-          _hovering = false;
-        });
-      },
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: Tooltip(
-          message: widget.tooltip,
-          waitDuration: tooltipWaitDuration,
-          decoration: BoxDecoration(
-            color: _tooltipBackgroundColor,
-          ),
-          textStyle: TextStyle(
-            color: _tooltipForegroundColor,
-          ),
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      margin: widget.margin,
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        shape: widget.shape,
+        borderRadius: widget.borderRadius,
+      ),
+      child: MouseRegion(
+        onEnter: (event) {
+          setState(() {
+            _color = widget.mouseOver;
+            _iconColor = widget.iconMouseOver;
+            _hovering = true;
+          });
+        },
+        onExit: (event) {
+          setState(() {
+            _color = widget.normal;
+            _iconColor = widget.iconNormal;
+            _hovering = false;
+          });
+        },
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.onTap,
           child: AnimatedContainer(
-            duration: widget.duration,
-            curve: widget.curve,
-            width: widget.width,
-            height: widget.height,
-            margin: widget.margin,
-            decoration: BoxDecoration(
-              shape: widget.shape,
-              borderRadius: widget.borderRadius,
-              color: _color
-            ),
-            child: Icon(
-              widget.icon,
-              size: widget.iconSize,
-              color: _iconColor,
+            duration: colorChangeDuration,
+            curve: colorChangeCurve,
+            color: _color,
+            child: Tooltip(
+              message: widget.tooltip,
+              waitDuration: tooltipWaitDuration,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: _tooltipBackgroundColor,
+              ),
+              textStyle: TextStyle(
+                color: _tooltipForegroundColor,
+              ),
+              child: Icon(
+                widget.icon,
+                size: widget.iconSize,
+                color: _iconColor,
+              ),
             ),
           ),
         ),
@@ -114,7 +118,7 @@ class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
   }
 
   void loadColors() {
-    var themeType = _themeModel.getThemeType();
+    final themeType = _themeModel.getThemeType();
 
     _tooltipBackgroundColor = ColorManager.getTooltipBackgroundColor(themeType);
     _tooltipForegroundColor = ColorManager.getTooltipForegroundColor(themeType);

@@ -1,6 +1,6 @@
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:daewon_am/components/helpers/theme/color_manager.dart';
+import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';

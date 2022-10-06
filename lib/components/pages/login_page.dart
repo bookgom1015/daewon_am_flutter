@@ -1,10 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
 
-import 'package:daewon_am/components/helpers/theme/color_manager.dart';
+import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/dialogs/ok_dialog.dart';
 import 'package:daewon_am/components/globals/global_routes.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
-import 'package:daewon_am/components/helpers/http/http_helper.dart';
+import 'package:daewon_am/components/helpers/http_helper.dart';
+import 'package:daewon_am/components/helpers/setting_manager.dart';
+import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
 import 'package:daewon_am/components/widgets/buttons/mouse_reaction_button.dart';
@@ -28,25 +32,27 @@ class _LoginPageState extends State<LoginPage> {
   late Color _layerColor;
   late Color _identityColor;
   late Color _identityMouseOverColor;
-
   late Color _underlineColor;
   late Color _underlineFocusedColor;
   late Color _underlineInvalidColor;
   late Color _underlineInvalidFocusedColor;
   late Color _hintTextColor;
+  late Color _cursorColor;
 
   final _idController = TextEditingController();
   final _pwdController = TextEditingController();
 
   bool _visible = false;
 
-  String _userId = "";
-  String _userPwd = "";
-
   bool _idIsValid = true;
   bool _pwdIsValid = true;
 
   bool _loggingIn = false;
+  bool _autoLoginChecked = false;
+  bool _settingLoaded = false;
+
+  late File _settingFile;
+  late dynamic _settingJson;
 
   @override
   void didChangeDependencies() {
@@ -54,10 +60,10 @@ class _LoginPageState extends State<LoginPage> {
     _themeModel = context.watch<ThemeSettingModel>();
     _userInfoModel = context.watch<UserInfoModel>();
 
-    _idController.text = _userId;
-    _pwdController.text = _userPwd;
-
-    loadColors();
+    if (!_settingLoaded) {
+      loadColors();
+      loadSettingFile();
+    }
   }
 
   @override
@@ -70,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
           maxWidth: 800,
           maxHeight: 600
         ),
-        child: _loggingIn ? const LoadingIndicator() :
+        child: (!_settingLoaded || _loggingIn) ? const LoadingIndicator() :
         AnimatedContainer(
           duration: colorChangeDuration,
           curve: colorChangeCurve,
@@ -113,7 +119,9 @@ class _LoginPageState extends State<LoginPage> {
                         ),                        
                       ),
                       pwdTextFormFieldWidget(),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 10),
+                      autoLoginCheckBoxWidget(),
+                      const SizedBox(height: 30),
                       loginButtonWidget()
                     ],
                   ),
@@ -127,31 +135,51 @@ class _LoginPageState extends State<LoginPage> {
   }  
 
   void loadColors() {
-    var themeType = _themeModel.getThemeType();
-
+    final themeType = _themeModel.getThemeType();
     _foregroundColor = ColorManager.getForegroundColor(themeType);
     _layerColor = ColorManager.getLayerBackgroundColor(themeType);
     _identityColor = ColorManager.getIdentityColor(themeType);
     _identityMouseOverColor = ColorManager.getIdentityMouseOverColor(themeType);
-
     _underlineColor = ColorManager.getTextFormFieldUnderlineColor(themeType);
     _underlineFocusedColor = ColorManager.getTextFormFieldUnderlineFocusedColor(themeType);
     _underlineInvalidColor = ColorManager.getTextFormFieldUnderlineInvalidColor(themeType);
     _underlineInvalidFocusedColor = ColorManager.getTextFormFieldUnderlineInvalidFocusedColor(themeType);
     _hintTextColor = ColorManager.getHintTextColor(themeType);
+    _cursorColor = ColorManager.getCursorColor(themeType);
+  }
+
+  void loadSettingFile() async {
+    _settingFile = await SettingManager.getSettingFile();
+    final fileStr = await _settingFile.readAsString();
+    _settingJson = jsonDecode(fileStr);
+    final userId = _settingJson[SettingManager.userIdKey];
+    final userPwd = _settingJson[SettingManager.userPwdKey];
+    if (userId != null && userPwd != null) {
+      _loggingIn = _settingLoaded = true;
+      _idController.text = userId.toString();
+      _pwdController.text = userPwd.toString();
+      login();
+    }
+    else {
+      if (mounted) {
+        setState(() {
+          _settingLoaded = true;
+        });    
+      }
+    }
   }
 
   bool validate() {
     bool isValid = true;
     setState(() {
-      if (_userId == "") {
+      if (_idController.text == "") {
       isValid = false;
       _idIsValid = false;
       }
       else {
         _idIsValid = true;
       }
-      if (_userPwd == "") {
+      if (_pwdController.text == "") {
         isValid = false;
         _pwdIsValid = false;
       }
@@ -162,25 +190,30 @@ class _LoginPageState extends State<LoginPage> {
     return isValid;
   }
 
-  void login() async {    
+  void login() {    
     if (!validate()) {
       setState(() {
         _loggingIn = false;
       });
       return;
     }
-
-    try {
-      var priv = await HttpHelper.login(_userId, _userPwd);
-
-      _userInfoModel.login(_userId, priv);
-      setState(() {
-        _loggingIn = false;
+    final privFuture = HttpHelper.login(_idController.text, _pwdController.text);
+    privFuture.then((priv) {
+      _userInfoModel.login(_idController.text, priv);
+      if (_autoLoginChecked) {
+        _settingJson[SettingManager.userIdKey] = _idController.text.toString();
+        _settingJson[SettingManager.userPwdKey] = _pwdController.text.toString();
+      }
+      else {
+        _settingJson[SettingManager.userIdKey] = null;
+        _settingJson[SettingManager.userPwdKey] = null;
+      }
+      final finished = _settingFile.writeAsString(jsonEncode(_settingJson));
+      finished.then((value) {
+        Navigator.pushReplacementNamed(context, workspacePageRoute);
       });
-
-      Navigator.pushReplacementNamed(context, workspacePageRoute);
-    }
-    catch (e) {
+    })
+    .catchError((e) {
       showOkDialog(
         context: context, 
         themeModel: _themeModel,
@@ -190,10 +223,8 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _loggingIn = false;
       });
-      _userPwd = "";
       _pwdController.clear();
-      return;      
-    }
+    });
   }
 
   Widget idTextFormFieldWidget() {
@@ -204,9 +235,7 @@ class _LoginPageState extends State<LoginPage> {
         color: _foregroundColor,
         fontSize: 14
       ),
-      onChanged: (text) {
-        _userId = text;
-      },
+      cursorColor: _cursorColor,
       decoration: InputDecoration(
         enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: _idIsValid ? _underlineColor : _underlineInvalidColor)
@@ -231,9 +260,7 @@ class _LoginPageState extends State<LoginPage> {
         color: _foregroundColor,
         fontSize: 14
       ),
-      onChanged: (text) {
-        _userPwd = text;
-      },
+      cursorColor: _cursorColor,
       obscureText: !_visible,
       decoration: InputDecoration(
         enabledBorder: UnderlineInputBorder(
@@ -287,6 +314,36 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget autoLoginCheckBoxWidget() {
+    return SizedBox(
+      height: 40,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            "자동 로그인",
+            style: TextStyle(
+              color: _foregroundColor
+            ),
+          ),
+          const SizedBox(width: 5),
+          WidgetHelper.checkBoxWidget(
+            onChanged: (value) {
+              if (value == null) return;
+              setState(() {
+                _autoLoginChecked = value;
+              });
+            }, 
+            value: _autoLoginChecked,
+            borderColor: _foregroundColor,
+            activeColor: _identityColor,
+            checkColor: _foregroundColor,
+          )
+        ],
       ),
     );
   }

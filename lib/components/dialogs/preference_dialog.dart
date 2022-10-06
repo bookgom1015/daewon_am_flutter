@@ -1,4 +1,4 @@
-import 'package:daewon_am/components/helpers/theme/color_manager.dart';
+import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
 import 'package:daewon_am/components/pages/my_page.dart';
 import 'package:daewon_am/components/widgets/buttons/mouse_reaction_icon_button.dart';
@@ -22,6 +22,7 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
   late UserInfoModel _userInfoModel;
 
   late Color _backgroundColor;
+  late Color _foregroundColor;
   late Color _identityColor;
   late Color _preferenceBackgroundColor;
   late Color _underlineBackgroundColor;
@@ -30,11 +31,6 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
   late Color _mouseOver;
   late Color _iconNormal;
   late Color _iconMouseOver;
-
-  late Color _color;
-  late Color _iconColor;
-
-  bool _hovering = false;
 
   late PageController _pageController;
 
@@ -116,6 +112,7 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
     var themeType = _themeModel.getThemeType();
 
     _backgroundColor = ColorManager.getBackgroundColor(themeType);
+    _foregroundColor = ColorManager.getForegroundColor(themeType);
     _identityColor = ColorManager.getIdentityColor(themeType);
     _preferenceBackgroundColor = ColorManager.getPreferenceBackgroundColor(themeType);
     _underlineBackgroundColor = ColorManager.getPreferenceUnderlineBakcgroundColor(themeType);
@@ -124,9 +121,6 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
     _mouseOver = ColorManager.getTitleBarCloseButtonMouseOverBackgroundColor(themeType);
     _iconNormal = ColorManager.getTitleBarButtonIconColor(themeType);
     _iconMouseOver = ColorManager.getTitleBarButtonIconMouseOverColor(themeType);
-
-    _color = _hovering ? _mouseOver : _normal;
-    _iconColor = _hovering ? _iconMouseOver : _iconNormal;
   }
 
   Widget titleBarWidget() {    
@@ -147,7 +141,7 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
               child: Text(
                 "설정",
                 style: TextStyle(
-                  color: _iconMouseOver,
+                  color: _foregroundColor,
                   fontSize: 24
                 ),
               ),
@@ -155,37 +149,21 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
           ),
           Align(
             alignment: Alignment.topRight,
-            child: MouseRegion(
-              onEnter: (event) {
-                setState(() {
-                  _color = _mouseOver;
-                  _iconColor = _iconMouseOver;
-                  _hovering = true;
-                });
+            child: MouseReactionIconButton(
+              onTap: () {
+                Navigator.of(context).pop();
               },
-              onExit: (event) {
-                setState(() {
-                  _color = _normal;
-                  _iconColor = _iconNormal;
-                  _hovering = false;
-                });
-              },
-              child: MouseReactionIconButton(
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
-                width: 40,
-                height: 30,
-                borderRadius: const BorderRadius.only(topRight: Radius.circular(8)),
-                duration: colorChangeDuration,
-                curve: colorChangeCurve,
-                normal: _normal,
-                mouseOver: _mouseOver,
-                iconNormal: _iconNormal,
-                iconMouseOver: _iconMouseOver,
-                icon: Icons.close,
-                iconSize: 20,
-              ),
+              width: 40,
+              height: 30,
+              borderRadius: const BorderRadius.only(topRight: Radius.circular(8)),
+              duration: colorChangeDuration,
+              curve: colorChangeCurve,
+              normal: _normal,
+              mouseOver: _mouseOver,
+              iconNormal: _iconNormal,
+              iconMouseOver: _iconMouseOver,
+              icon: Icons.close,
+              iconSize: 20,
             ),
           )
         ],

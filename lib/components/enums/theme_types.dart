@@ -1,5 +1,6 @@
 
 enum EThemeTypes {
   eDark,
-  eLight
+  eLight,
+  ePinkBlue,
 }

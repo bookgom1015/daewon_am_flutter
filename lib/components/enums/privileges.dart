@@ -1,7 +1,7 @@
 
-import 'package:flutter/scheduler.dart';
 
 enum EPrivileges {
+  eNone,
   eAdmin,
   eObserver,
   eManager,
@@ -20,7 +20,22 @@ extension EPrivilegesExt on EPrivileges {
       case EPrivileges.eAccountant:
       return 1 << 3;
       default:
-      return -1;
+      return 0;
     }
+  }
+}
+
+EPrivileges toPriv(int id) {
+  switch (id) {
+    case 1 << 0:
+    return EPrivileges.eAdmin;
+    case 1 << 1:
+    return EPrivileges.eObserver;
+    case 1 << 2:
+    return EPrivileges.eManager;
+    case 1 << 3:
+    return EPrivileges.eAccountant;
+    default:
+    return EPrivileges.eNone;
   }
 }

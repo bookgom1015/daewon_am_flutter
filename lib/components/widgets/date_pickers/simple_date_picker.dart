@@ -1,5 +1,5 @@
 import 'package:daewon_am/components/helpers.dart';
-import 'package:daewon_am/components/helpers/theme/color_manager.dart';
+import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -63,7 +63,7 @@ class _SimpleDatePickerState extends State<SimpleDatePicker> {
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: () async {
-              var selectedDate = await showDatePickerExt(
+              final selectedDate = await showDatePickerExt(
                 context: context, 
                 builder: (context, child) {
                   return Theme(
@@ -108,7 +108,7 @@ class _SimpleDatePickerState extends State<SimpleDatePicker> {
   }
 
   void loadColors() {
-    var themeType = _themeModel.getThemeType();
+    final themeType = _themeModel.getThemeType();
 
     _foregroundColor = ColorManager.getForegroundColor(themeType);
     _iconForegroundColor = ColorManager.getWidgetIconForegroundColor(themeType);

@@ -1,5 +1,7 @@
-import 'package:daewon_am/components/helpers/theme/color_manager.dart';
+import 'package:daewon_am/components/helpers.dart';
+import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
+import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/enums/theme_types.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,9 @@ class ThemeSettingPage extends StatefulWidget {
 
 class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerProviderStateMixin {
   late ThemeSettingModel _themeModel;
+
+  late Color _backgroundColor;
+  late Color _backgroundTransparentColor;
 
   late AnimationController _controller;
   late Animation<double> _curveAnimation;
@@ -44,6 +49,8 @@ class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerPr
   void didChangeDependencies() {
     super.didChangeDependencies();
     _themeModel = context.watch<ThemeSettingModel>();
+
+    loadColors();
   }
 
   @override
@@ -54,52 +61,69 @@ class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [            
-            themeBoxWidget(
-              EThemeTypes.eDark,
-              darkBackgroundColor, 
-              darkIdentityColor,
-              darkLayerBackgroundColor, 
-              darkWidgetBackgroundColor
-            ),
-            themeBoxWidget(
-              EThemeTypes.eLight,
-              lightBackgroundColor, 
-              lightIdentityColor, 
-              lightLayerBackgroundColor, 
-              lightWidgetBackgroundColor
-            ),
-          ],
-        )
-      ),
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Center(
+            child: Column(
+              children: [            
+                themeBoxWidget(
+                  EThemeTypes.eDark,
+                  darkBackgroundColor, 
+                  darkIdentityColor,
+                  darkLayerBackgroundColor, 
+                  darkWidgetBackgroundColor
+                ),
+                themeBoxWidget(
+                  EThemeTypes.eLight,
+                  lightBackgroundColor, 
+                  lightIdentityColor, 
+                  lightLayerBackgroundColor, 
+                  lightWidgetBackgroundColor
+                ),
+                themeBoxWidget(
+                  EThemeTypes.ePinkBlue,
+                  pinkBlueBackgroundColor, 
+                  pinkBlueIdentityColor, 
+                  pinkBlueLayerBackgroundColor, 
+                  pinkBlueWidgetBackgroundColor
+                ),
+              ],
+            )
+          ),
+        ),
+        Align(
+          alignment: Alignment.topCenter,
+          child: WidgetHelper.fadeOutWidget(
+            length: 30,
+            fromColor: _backgroundColor,
+            toColor: _backgroundTransparentColor
+          ),
+        ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: WidgetHelper.fadeOutWidget(
+            length: 30,
+            fromColor: _backgroundTransparentColor,
+            toColor: _backgroundColor
+          ),
+        ),
+      ],
     );
   }
 
+  void loadColors() {
+    var themeType = _themeModel.getThemeType();
+
+    _backgroundColor = ColorManager.getPreferenceBackgroundColor(themeType);
+    _backgroundTransparentColor = ColorManager.getPreferenceBackgroundTransparentColor(themeType);
+  }
+
   Widget themeBoxWidget(EThemeTypes themeType, Color backgroundColor, Color identityColor, Color layerColor, Color widgetColor) {
-    Widget themeButton = Container(
-      margin: const EdgeInsets.only(left: 5, right: 5),
-      width: 30,
-      height: 30,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        color: widgetColor
-      ),
-    );
-
     bool matched = _themeModel.getThemeType() == themeType;
-
     return MouseRegion(
-      onEnter: (event) {
-
-      },
-      onExit: (event) {
-
-      },
+      cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () {
           _themeModel.changeTheme(themeType);
@@ -107,30 +131,35 @@ class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerPr
           _controller.forward();
         },
         child: Stack(
-          children: [        
-            Visibility(
-              visible: matched,
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (context, _) {
-                  return Container(              
-                    margin: const EdgeInsets.all(25),
-                    width: 266,
-                    height: 266,
-                    decoration: BoxDecoration(
-                      color: identityColor,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 16 * _animation.value,
-                          spreadRadius: 4 * _animation.value,
-                          color: identityColor
-                        )
-                      ]
-                    ),  
-                  );
-                },
-              ),
+          children: [
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, _) {
+                return Container(              
+                  margin: const EdgeInsets.all(26),
+                  width: 264,
+                  height: 264,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: identityColor,
+                  ),
+                  child: Visibility(
+                    visible: matched,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 16 * _animation.value,
+                            spreadRadius: 4 * _animation.value,
+                            color: identityColor
+                          )
+                        ]
+                      ),
+                    ),
+                  ),  
+                );
+              },
             ),   
             Container(
               margin: const EdgeInsets.all(30),
@@ -163,9 +192,9 @@ class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerPr
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          themeButton,
-                          themeButton,
-                          themeButton,
+                          themeButtonWidget(widgetColor),
+                          themeButtonWidget(widgetColor),
+                          themeButtonWidget(widgetColor),
                         ],
                       ),
                     )
@@ -175,6 +204,18 @@ class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerPr
             )
           ],
         ),
+      ),
+    );
+  }
+
+  Widget themeButtonWidget(Color widgetColor) {
+    return Container(
+      margin: const EdgeInsets.only(left: 5, right: 5),
+      width: 30,
+      height: 30,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: widgetColor
       ),
     );
   }

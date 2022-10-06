@@ -1,17 +1,24 @@
+import 'dart:io';
+
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:daewon_am/components/dialogs/ok_dialog.dart';
 import 'package:daewon_am/components/globals/global_routes.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
+import 'package:daewon_am/components/helpers/http_helper.dart';
 import 'package:daewon_am/components/models/page_control_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
 import 'package:daewon_am/components/pages/login_page.dart';
 import 'package:daewon_am/components/pages/workspace_page.dart';
+import 'package:daewon_am/components/widgets/presets/loading_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:daewon_am/components/helpers/theme/color_manager.dart';
+import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/widgets/presets/page_nav_buttons.dart';
 import 'package:daewon_am/components/widgets/buttons/preference_button.dart';
 import 'package:daewon_am/components/widgets/presets/window_buttons.dart';
+import 'package:yaml/yaml.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -27,6 +34,8 @@ class _MainPageState extends State<MainPage> {
 
   final _navigatorState = GlobalKey<NavigatorState>();
 
+  bool _checked = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -35,16 +44,18 @@ class _MainPageState extends State<MainPage> {
     _pageControlModel = context.watch<PageControlModel>();
 
     _pageControlModel.setNaviatorStae(_navigatorState.currentState);
+
+    checkLastVersion();
   }
 
   @override
   Widget build(BuildContext context) {
-    var themeType = _themeModel.getThemeType();
-    var backgroundColor = ColorManager.getBackgroundColor(themeType);
+    final themeType = _themeModel.getThemeType();
+    final backgroundColor = ColorManager.getBackgroundColor(themeType);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AnimatedContainer(
+        AnimatedContainer(          
           duration: colorChangeDuration,
           curve: colorChangeCurve,
           decoration: BoxDecoration(
@@ -81,11 +92,11 @@ class _MainPageState extends State<MainPage> {
             decoration: BoxDecoration(
               color: backgroundColor
             ),
-            child: Navigator(
+            child: _checked ? Navigator(
               key: _navigatorState,
               initialRoute: loginPageRoute,
               onGenerateRoute: onGenerateRoute,
-            )
+            ) : const LoadingIndicator()
           )
         )
       ]
@@ -111,5 +122,51 @@ class _MainPageState extends State<MainPage> {
       },
       settings: settings
     );
+  }
+
+  void checkLastVersion() {
+    final lastVerFuture = HttpHelper.getLastVersion();
+    lastVerFuture.then((lastVer) {
+      final yamlFuture = rootBundle.loadString("pubspec.yaml");
+      yamlFuture.then((yamlStr) {
+        final yaml = loadYaml(yamlStr);
+        final currVer = yaml["version"];
+        if (lastVer != currVer) {
+          final exeFileName = Platform.resolvedExecutable;
+          final end = exeFileName.lastIndexOf("\\");
+          final currPath =exeFileName.substring(0, end);
+          final filePath = "$currPath\\update\\daewon_am_updater.exe";
+          showOkDialog(
+            context: context, 
+            themeModel: _themeModel,
+            title: "알림",
+            message: "업데이트된 버전이 확인되었습니다",
+            onPressed: () {
+              var startFuture = Process.start(filePath, []);
+              startFuture.then((proc) {
+                exit(0);
+              });
+            }
+          );
+          return;
+        }
+        setState(() {
+          _checked = true;
+        });
+      });      
+    })
+    .catchError((_) {
+      showOkDialog(
+        context: context, 
+        themeModel: _themeModel,
+        title: "오류",
+        message: "버전 정보를 불러오지 못 했습니다",
+        onPressed: () {
+          setState(() {
+            _checked = true;
+          });
+        }
+      );
+    });
   }
 }
