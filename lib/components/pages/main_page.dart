@@ -2,12 +2,18 @@ import 'dart:io';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:daewon_am/components/dialogs/ok_dialog.dart';
+import 'package:daewon_am/components/entries/page_list.dart';
+import 'package:daewon_am/components/enums/privileges.dart';
 import 'package:daewon_am/components/globals/global_routes.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
 import 'package:daewon_am/components/helpers/http_helper.dart';
 import 'package:daewon_am/components/models/page_control_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
+import 'package:daewon_am/components/pages/accounting_page.dart';
+import 'package:daewon_am/components/pages/admin_page.dart';
+import 'package:daewon_am/components/pages/chart_page.dart';
 import 'package:daewon_am/components/pages/login_page.dart';
+import 'package:daewon_am/components/pages/receivable_page.dart';
 import 'package:daewon_am/components/pages/workspace_page.dart';
 import 'package:daewon_am/components/widgets/presets/loading_indicator.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +42,8 @@ class _MainPageState extends State<MainPage> {
 
   bool _checked = false;
 
+  final _pageList = PageList();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -46,6 +54,7 @@ class _MainPageState extends State<MainPage> {
     _pageControlModel.setNaviatorStae(_navigatorState.currentState);
 
     checkLastVersion();
+    buildPageList();
   }
 
   @override
@@ -75,7 +84,7 @@ class _MainPageState extends State<MainPage> {
                           child: MoveWindow(),
                         ),
                       ),
-                      _userInfoModel.getLoggedIn() ? const PageNavButtons() : const SizedBox(),
+                      _userInfoModel.getLoggedIn() ? PageNavButtons(pageList: _pageList) : const SizedBox(),
                       const PreferenceButton()
                     ],
                   )
@@ -110,7 +119,7 @@ class _MainPageState extends State<MainPage> {
       page = const LoginPage();
     }
     else if (settings.name == workspacePageRoute) {
-      page = const WorkspacePage();
+      page = WorkspacePage(pageList: _pageList);
     }
     else {
       throw Exception("Unknown route: ${settings.name}");
@@ -168,5 +177,15 @@ class _MainPageState extends State<MainPage> {
         }
       );
     });
+  }
+
+  void buildPageList() {
+    _pageList.clear();
+    _pageList.addPage(const AccountingPage(), PageNavButton(Icons.description_rounded, 18, "회계", 0));
+    _pageList.addPage(const ReceivablePage(), PageNavButton(Icons.manage_search, 20, "미수금", 1));
+    _pageList.addPage(const ChartPage(), PageNavButton(Icons.bar_chart, 24, "차트", 2));
+    if (_userInfoModel.getPrivileges() == EPrivileges.eAdmin) {
+      _pageList.addPage(const AdminPage(), PageNavButton(Icons.admin_panel_settings, 20, "관리자", 3));
+    }
   }
 }

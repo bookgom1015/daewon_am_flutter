@@ -6,10 +6,11 @@ class DataManager {
   static void loadDates({
     required void Function(Map<int, Set<int>> dateMap) onFinished,
     required void Function(String) onError,
+    required String token,
     bool receivable = false,
     bool yearly = false,
   }) {
-    final future = HttpHelper.getDates(receivable: receivable);
+    final future = HttpHelper.getDates(token: token, receivable: receivable);
     future.then((dates) {
       Map<int, Set<int>> dateMap = <int, Set<int>>{};
       if (yearly) dateMap[-1] = {};
@@ -31,11 +32,13 @@ class DataManager {
   static void loadAccountingData({
     required int year, 
     required int month,
+    required String token,
     required void Function(List<AccountingData> dataList) onFinished,
     required void Function(String) onError,
     bool receivable = false,
   }) {
     final future = HttpHelper.getAccountingData(
+      token: token,
       year: year, 
       month: month, 
       receivable: receivable
@@ -52,11 +55,13 @@ class DataManager {
     required DateTime begin,
     required DateTime end,
     required String clientName,
+    required String token,
     required void Function(List<AccountingData> dataList) onFinished,
     required void Function(String) onError,
     bool receivable = false,
   }) {    
     final future = HttpHelper.getAccountingDataAsSearching(
+      token: token,
       begin: begin, 
       end: end, 
       clientName: clientName, 
@@ -71,11 +76,12 @@ class DataManager {
   }
 
   static void addAccountingData({
+    required String token,
     required AccountingData data,
     required void Function() onFinised,
     required void Function(String) onError,
   }) {
-    final future = HttpHelper.addAccountingData(data);
+    final future = HttpHelper.addAccountingData(token: token, data: data);
     future.then((value) {
       onFinised();
     })
@@ -85,11 +91,12 @@ class DataManager {
   }
 
   static void addAccountingDataList({
+    required String token,
     required List<AccountingData> dataList,
     required void Function() onFinised,
     required void Function(String) onError,
   }) {
-    final future = HttpHelper.addAccountingDataList(dataList);
+    final future = HttpHelper.addAccountingDataList(token: token, dataList: dataList);
     future.then((value) {
       onFinised();
     })
@@ -100,10 +107,11 @@ class DataManager {
 
   static void editAccountingData({
     required AccountingData data,
+    required String token,
     required void Function() onFinised,
     required void Function(String err) onError,
   }) {
-    final future = HttpHelper.editAccountingData(data);
+    final future = HttpHelper.editAccountingData(token: token, data: data);
     future.then((value) {
       onFinised();
     })
@@ -114,10 +122,11 @@ class DataManager {
 
   static void removeAccountingData({
     required AccountingData data,
+    required String token,
     required void Function() onFinised,
     required void Function(String) onError,
   }) {
-    final future = HttpHelper.removeAccountingData(data);
+    final future = HttpHelper.removeAccountingData(token: token, data: data);
     future.then((value) {
       onFinised();
     })
@@ -128,10 +137,11 @@ class DataManager {
 
   static void removeAccountingDataList({
     required List<AccountingData> dataList,
+    required String token,
     required void Function() onFinised,
     required void Function(String) onError,
   }) {
-    final future = HttpHelper.removeAccountingDataList(dataList);
+    final future = HttpHelper.removeAccountingDataList(token: token, dataList: dataList);
     future.then((value) {
       onFinised();
     })
@@ -143,11 +153,12 @@ class DataManager {
   static void loadChartData({
     required int year, 
     required int month,
+    required String token,
     required void Function(List<SfChartData> dataList) onFinished,
     required void Function(String) onError,
     bool receivable = false,
   }) {
-    final future = HttpHelper.getGraphData(year, month);      
+    final future = HttpHelper.getGraphData(token: token, year: year, month: month);      
     future.then((list) {
       onFinished(list);
     })

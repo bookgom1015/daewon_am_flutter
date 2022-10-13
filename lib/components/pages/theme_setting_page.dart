@@ -1,4 +1,3 @@
-import 'package:daewon_am/components/helpers.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
 import 'package:daewon_am/components/helpers/widget_helper.dart';
@@ -82,13 +81,13 @@ class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerPr
                   lightLayerBackgroundColor, 
                   lightWidgetBackgroundColor
                 ),
-                themeBoxWidget(
-                  EThemeTypes.ePinkBlue,
-                  pinkBlueBackgroundColor, 
-                  pinkBlueIdentityColor, 
-                  pinkBlueLayerBackgroundColor, 
-                  pinkBlueWidgetBackgroundColor
-                ),
+                //themeBoxWidget(
+                //  EThemeTypes.ePinkBlue,
+                //  pinkBlueBackgroundColor, 
+                //  pinkBlueIdentityColor, 
+                //  pinkBlueLayerBackgroundColor, 
+                //  pinkBlueWidgetBackgroundColor
+                //),
               ],
             )
           ),

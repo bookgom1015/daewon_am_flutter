@@ -1,9 +1,7 @@
 import 'package:daewon_am/components/entries/accounting_data.dart';
-import 'package:daewon_am/components/globals/global_theme_settings.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
-import 'package:daewon_am/components/widgets/buttons/mouse_reaction_button.dart';
 import 'package:daewon_am/components/widgets/date_pickers/simple_date_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -459,8 +457,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
       margin: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Container(
-            color: Colors.transparent,
+          SizedBox(
             width: 60,
             child: Text(
               label,

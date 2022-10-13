@@ -4,6 +4,7 @@ import 'package:daewon_am/components/widgets/buttons/mouse_reaction_button.dart'
 import 'package:daewon_am/components/widgets/buttons/mouse_reaction_icon_button.dart';
 import 'package:daewon_am/components/widgets/date_pickers/simple_date_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 class WidgetHelper {
   static Widget fadeOutWidget({
@@ -45,6 +46,7 @@ class WidgetHelper {
         padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
         child: TextFormField(
           controller: textEditingController,
+          maxLength: 32,
           style: TextStyle(
             color: foregroundColor
           ),
@@ -61,7 +63,8 @@ class WidgetHelper {
               iconNormal: iconNormal,
               iconMouseOver: iconMouseOver,
               icon: Icons.search,
-            )
+            ),
+            counterText: "",
           ),
         ),
       ),
@@ -179,6 +182,30 @@ class WidgetHelper {
       activeColor: activeColor,
       checkColor: checkColor,
       splashRadius: 0,
+    );
+  }
+
+  static GridColumn gridColumnWidget({
+    required String columnName, 
+    required String label, 
+    required double width,
+    bool allowSorting = false,
+    Color color = Colors.black,
+  }) {    
+    return GridColumn(
+      allowSorting: allowSorting,
+      width: width,
+      columnName: columnName, 
+      label: Container(
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      )
     );
   }
 }

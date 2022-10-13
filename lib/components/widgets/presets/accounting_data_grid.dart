@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:daewon_am/components/entries/accounting_data.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/helpers/format_manager.dart';
@@ -10,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:collection/collection.dart';
+import 'package:daewon_am/components/entries/data_column.dart';
 
 class AccountingDataGrid extends StatefulWidget {
   final List<AccountingData> dataList;
@@ -36,29 +35,38 @@ class _AccountingDataGridState extends State<AccountingDataGrid> {
   late Color _dataGridRowHoverColor;
   late Color _dataGridSelectionColor;
 
-  late Map<String, double> columnWidths;
-
-  late AccountingDataSource _dataSource;
-
   String _sortedColumn = "date";
   DataGridSortDirection _sortDirection = DataGridSortDirection.ascending;
 
+  final double _dataTypeMinWidth = 110;
+  final double _clientNameMinWidth = 120;
+  final double _dateMinWidth = 110;
+  final double _steelWeightMinWidth = 90;
+  final double _supplyPriceMinWidth = 120;
+  final double _taxAmountMinWidth = 120;
+  final double _unitPriceMinWidth = 120;
+  final double _sumMinWidth = 120;
+  final double _depsitDateMinWidth = 110;
+
+  late List<DataGridColumn> _dataColumnList; 
 
   @override
   void initState() {
     super.initState();
 
-    columnWidths = {
-      "dataType": 110,
-      "clientName": 120,
-      "date": 110,
-      "steelWeight": 110,
-      "supplyPrice": 120,
-      "taxAmount": 120,
-      "unitPrice": 100,
-      "sum": 120,
-      "depositDate": 110,
-    };
+    _dataColumnList = [
+      DataGridColumn("data", "", 0, false),
+      DataGridColumn("dataType", "매입/매출", _dataTypeMinWidth, true),
+      DataGridColumn("clientName", "거래처", _clientNameMinWidth, true),
+      DataGridColumn("date", "날짜", _dateMinWidth, true),
+      DataGridColumn("steelWeight", "중량(t)", _steelWeightMinWidth, true),
+      DataGridColumn("supplyPrice", "공급가", _supplyPriceMinWidth, true),
+      DataGridColumn("taxAmount", "세액", _taxAmountMinWidth, true),
+      DataGridColumn("unitPrice", "단가", _unitPriceMinWidth, true),
+      DataGridColumn("sum", "합계", _sumMinWidth, true),
+      DataGridColumn("depositDate", "입금날짜", _depsitDateMinWidth, true),
+      DataGridColumn("blank", "비고", double.nan, false),
+    ];
   }
 
   @override  
@@ -76,19 +84,15 @@ class _AccountingDataGridState extends State<AccountingDataGrid> {
 
   @override  
   Widget build(BuildContext context) {
-    _dataSource = AccountingDataSource(
+    final dataSource = AccountingDataSource(
       dataList: widget.dataList,
       foregroundColor: _foreGroundColor,
-      onSorted: (columnName, direction) {
-        _sortedColumn = columnName;
-        _sortDirection = direction;
-      }
     );
-    _dataSource.sortedColumns.add(SortColumnDetails(
+    dataSource.sortedColumns.add(SortColumnDetails(
       name: _sortedColumn, 
       sortDirection: _sortDirection
     ));
-    _dataSource.sort();
+    dataSource.sort();
     return Stack(
       children: [
         SfDataGridTheme(
@@ -97,7 +101,7 @@ class _AccountingDataGridState extends State<AccountingDataGrid> {
             columnResizeIndicatorColor: _dataGridSelectionColor,
             headerHoverColor: _dataGridRowHoverColor,
             rowHoverColor: _dataGridRowHoverColor,
-            selectionColor: _dataGridSelectionColor,
+            selectionColor: _dataGridSelectionColor,            
             sortIcon: Builder(
               builder: (context) {
                 Widget? icon;
@@ -106,7 +110,7 @@ class _AccountingDataGridState extends State<AccountingDataGrid> {
                   if (element is GridHeaderCellElement) columnName = element.column.columnName;
                   return true;
                 });
-                var column = _dataSource.sortedColumns
+                var column = dataSource.sortedColumns
                     .where((element) => element.name == columnName)
                     .firstOrNull;
                 if (column != null) {
@@ -123,29 +127,36 @@ class _AccountingDataGridState extends State<AccountingDataGrid> {
           ),
           child: SfDataGrid(
             controller: widget.controller,
-            source: _dataSource,
+            source: dataSource,
             allowColumnsResizing: true,
             allowSorting: true,
+            columnWidthMode: ColumnWidthMode.lastColumnFill,
             onColumnResizeUpdate: (details) => reduceColumnWidth(details.column.columnName, details.width),
             gridLinesVisibility: GridLinesVisibility.vertical,
             headerGridLinesVisibility: GridLinesVisibility.vertical,
             selectionMode: widget.multiSelection ? SelectionMode.multiple : SelectionMode.single,
-            columns: [
-              GridColumn(
-                width: 0,
-                columnName: "data", 
-                label: const Text("")
-              ),
-              gridColumnWidget("dataType", "매입/매출"),
-              gridColumnWidget("clientName", "거래처"),
-              gridColumnWidget("date", "날짜"),
-              gridColumnWidget("steelWeight", "중량(t)"),
-              gridColumnWidget("supplyPrice", "공급가"),
-              gridColumnWidget("taxAmount", "세액"),
-              gridColumnWidget("unitPrice", "단가"),   
-              gridColumnWidget("sum", "합계"),   
-              gridColumnWidget("depositDate", "입금날짜"),
-            ],
+            onCellTap: (details) {
+              if (details.rowColumnIndex.rowIndex == 0) {
+                bool same = _sortedColumn == details.column.columnName;
+                if (same) {
+                  _sortDirection = _sortDirection == DataGridSortDirection.ascending ? 
+                    DataGridSortDirection.descending : DataGridSortDirection.ascending;
+                }
+                else {
+                  _sortDirection = DataGridSortDirection.ascending;
+                }
+                _sortedColumn = details.column.columnName;
+              }
+            },
+            columns: _dataColumnList.map((e) {
+              return WidgetHelper.gridColumnWidget(
+                columnName: e.columnName, 
+                label: e.label,
+                color: _foreGroundColor,
+                width: e.width,
+                allowSorting: e.allowSorting
+              );
+            }).toList(),
           ),
         ),
         Align(
@@ -162,7 +173,6 @@ class _AccountingDataGridState extends State<AccountingDataGrid> {
 
   void loadColors() {
     final themeType = _themeModel.getThemeType();
-
     _layerBackgroundColor = ColorManager.getLayerBackgroundColor(themeType);
     _layerBackgroundTransparentColor = ColorManager.getLayerTransparentBackgroundColor(themeType);
     _foreGroundColor = ColorManager.getForegroundColor(themeType);
@@ -174,62 +184,49 @@ class _AccountingDataGridState extends State<AccountingDataGrid> {
   bool reduceColumnWidth(String columnName, double width) {
     switch (columnName) {
       case "dataType":
-      if (width <= 110) return false;
+      if (width <= _dataTypeMinWidth) return false;
       break;
       case "clientName": 
-      if (width <= 120) return false;
+      if (width <= _clientNameMinWidth) return false;
       break;
       case "date":
-      if (width <= 110) return false;
+      if (width <= _dateMinWidth) return false;
       break;
       case "steelWeight": 
-      if (width <= 110) return false;
+      if (width <= _steelWeightMinWidth) return false;
       break;
       case "supplyPrice": 
-      if (width <= 120) return false;
+      if (width <= _supplyPriceMinWidth) return false;
       break;
       case "taxAmount": 
-      if (width <= 120) return false;
+      if (width <= _taxAmountMinWidth) return false;
       break;
       case "unitPrice": 
-      if (width <= 100) return false;
+      if (width <= _unitPriceMinWidth) return false;
       break;
       case "sum": 
-      if (width <= 120) return false;
+      if (width <= _sumMinWidth) return false;
       break;
       case "depositDate": 
-      if (width <= 110) return false;
+      if (width <= _depsitDateMinWidth) return false;
       break;
+      default:
+      return true;
     }
-    setState(() {
-      columnWidths[columnName] = width;
-    });
+    final entry = _dataColumnList.where((element) => element.columnName == columnName).singleOrNull;
+    if (entry != null) {
+      setState(() {
+        entry.width = width;
+      });
+    }
     return true;
   }
 
-  GridColumn gridColumnWidget(String columnName, String label) {    
-    return GridColumn(
-      width: columnWidths[columnName]!,
-      columnName: columnName, 
-      label: Container(
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            color: _foreGroundColor,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      )
-    );
-  }
 }
 
 class AccountingDataSource extends DataGridSource {
-  final Color foregroundColor;
-  void Function(String columnName, DataGridSortDirection direction) onSorted;
-
   late List<DataGridRow> _dataList;
+  final Color foregroundColor;
 
   @override
   List<DataGridRow> get rows => _dataList;
@@ -237,7 +234,6 @@ class AccountingDataSource extends DataGridSource {
   AccountingDataSource({
     required List<AccountingData> dataList, 
     this.foregroundColor = Colors.black,
-    required this.onSorted
   }) {
     _dataList = dataList.map<DataGridRow>((e) => DataGridRow(
       cells: [
@@ -252,6 +248,7 @@ class AccountingDataSource extends DataGridSource {
         DataGridCell<String>(columnName: "sum", value: FormatManager.thousandSeperator(e.supplyPrice + e.taxAmount)),
         DataGridCell<String>(columnName: "depositDate", value: (!e.depositConfirmed || e.depositDate == null) ? 
           "" : FormatManager.dateTimeToString(e.depositDate!)),
+        const DataGridCell<String>(columnName: "blank", value: ""),
       ]
     )).toList();
   }
@@ -280,8 +277,9 @@ class AccountingDataSource extends DataGridSource {
       return Alignment.center;
     }
     else if (columnName == "clientName") {
-      return Alignment.center;
-    } else if (columnName == "date") {
+      return Alignment.centerLeft;
+    } 
+    else if (columnName == "date") {
       return Alignment.center;
     }
     else if (columnName == "steelWeight") {
@@ -309,7 +307,6 @@ class AccountingDataSource extends DataGridSource {
 
   @override
   int compare(DataGridRow? a, DataGridRow? b, SortColumnDetails sortColumn) {
-    onSorted(sortColumn.name, sortColumn.sortDirection);
     String? value1 = a?.getCells().firstWhereOrNull((element) => element.columnName == sortColumn.name)?.value.toString();
     String? value2 = b?.getCells().firstWhereOrNull((element) => element.columnName == sortColumn.name)?.value.toString();
     bool ascen = sortColumn.sortDirection == DataGridSortDirection.ascending;

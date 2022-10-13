@@ -10,20 +10,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-class ImportingAccountingDataDialog extends StatefulWidget {
+class AccountingDataImportDialog extends StatefulWidget {
   final List<AccountingData> dataList;
   final void Function() onPressed;
 
-  const ImportingAccountingDataDialog({
+  const AccountingDataImportDialog({
     Key? key,
     required this.dataList,
     required this.onPressed}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _ImportingAccountingDataDialogState();
+  State<StatefulWidget> createState() => _AccountingDataImportDialogState();
 }
 
-class _ImportingAccountingDataDialogState extends State<ImportingAccountingDataDialog> {
+class _AccountingDataImportDialogState extends State<AccountingDataImportDialog> {
   late ThemeSettingModel _themeModel;
 
   late Color _layerBackgroundColor;
@@ -193,22 +193,26 @@ class _ImportingAccountingDataDialogState extends State<ImportingAccountingDataD
       );
       return;
     }
-
-    showOkCancelDialog(
-      context: context, 
-      themeModel: _themeModel, 
-      title: "데이터 삭제",
-      message: "정말로 삭제하시겠습니까",
-      onPressed: () {
-        final dataCell = row.getCells().firstWhere((element) => element.columnName == "data");
-        final selectedData = dataCell.value as AccountingData;
-    
-        int index = widget.dataList.indexOf(selectedData);
-        setState(() {
-          widget.dataList.removeAt(index);
-        });
-      }
-    );
+    final dataCell = row.getCells().firstWhere((element) => element.columnName == "data");
+    final selectedData = dataCell.value as AccountingData;    
+    int index = widget.dataList.indexOf(selectedData);
+    setState(() {
+      widget.dataList.removeAt(index);
+    });
+    //showOkCancelDialog(
+    //  context: context, 
+    //  themeModel: _themeModel, 
+    //  title: "데이터 삭제",
+    //  message: "정말로 삭제하시겠습니까",
+    //  onPressed: () {
+    //    final dataCell = row.getCells().firstWhere((element) => element.columnName == "data");
+    //    final selectedData = dataCell.value as AccountingData;    
+    //    int index = widget.dataList.indexOf(selectedData);
+    //    setState(() {
+    //      widget.dataList.removeAt(index);
+    //    });
+    //  }
+    //);
   }
 }
 
@@ -223,7 +227,7 @@ void showImportingDialog({
     barrierDismissible: false,
     builder: (_) => ChangeNotifierProvider.value(
       value: themeModel,
-      child: ImportingAccountingDataDialog(
+      child: AccountingDataImportDialog(
         dataList: dataList,
         onPressed: onPressed,
       ),

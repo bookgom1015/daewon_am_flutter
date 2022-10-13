@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'dart:math';
 
+import 'package:daewon_am/components/enums/privileges.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/globals/global_routes.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
@@ -66,12 +66,29 @@ class _MyPageState extends State<MyPage> {
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 20),
-                child: Text(
-                  _userInfoModel.getUserId(),
-                  style: TextStyle(
-                    color: _foregroundColor,
-                    fontSize: 18
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _userInfoModel.getUserId(),
+                      style: TextStyle(
+                        color: _foregroundColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 2),
+                      child: Text(
+                        _userInfoModel.getPrivileges().desc,
+                        style: TextStyle(
+                          color: _foregroundColor,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               )
             ],
@@ -124,6 +141,7 @@ class _MyPageState extends State<MyPage> {
         final finished = settingFile.writeAsString(jsonEncode(settingJson));
         finished.then((value) {
           Navigator.of(context).pop();
+          _pageControlModel.onPageChanged(0);
           final state = _pageControlModel.getNavigatorState();
           if (state != null) Navigator.pushNamedAndRemoveUntil(state.context, loginPageRoute, (route) => false);
         });

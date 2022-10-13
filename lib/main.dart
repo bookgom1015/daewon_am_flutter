@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:daewon_am/components/helpers/http_helper.dart';
 import 'package:daewon_am/components/models/page_control_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
 import 'package:daewon_am/components/pages/main_page.dart';
@@ -11,8 +8,11 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 // "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64\signtool.exe" sign /f "D:\Packages\Key\kbgdaewon.pfx" /fd SHA256 /p 990011 $f
+// "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64\signtool.exe" sign /f "D:\Packages\Key\kbgdaewon.pfx" /fd SHA256 /p 990011 "D:\Visual Studio Code Projects\daewon_am\build\windows\runner\Release\daewon_am.exe"
+// 904ED7C8-D362-4094-BE10-57FD3AA85D0A
+// shellexec
 
-void main() async {
+void main() {
   runApp(const DaewonApp());
   appWindow.minSize = const Size(640, 480);
 }

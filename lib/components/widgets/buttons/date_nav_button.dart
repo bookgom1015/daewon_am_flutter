@@ -47,10 +47,11 @@ class _DateNavButtonState extends State<DateNavButton> {
   @override
   Widget build(BuildContext context) {
     bool selected = widget.year == widget.selectedYear && widget.month == widget.selectedMonth;
+    bool monthly = widget.month != -1;
 
     return Container(
       height: _dateNavHeight,
-      margin: EdgeInsets.only(left: widget.month == -1 ? 0 : 20, bottom: _dateNavVerticalMargin),
+      margin: EdgeInsets.only(left: monthly ? 25 : 0, bottom: _dateNavVerticalMargin),
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8)

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/dialogs/ok_dialog.dart';
@@ -60,8 +59,9 @@ class _LoginPageState extends State<LoginPage> {
     _themeModel = context.watch<ThemeSettingModel>();
     _userInfoModel = context.watch<UserInfoModel>();
 
+    loadColors();
+
     if (!_settingLoaded) {
-      loadColors();
       loadSettingFile();
     }
   }
@@ -156,6 +156,7 @@ class _LoginPageState extends State<LoginPage> {
     final userPwd = _settingJson[SettingManager.userPwdKey];
     if (userId != null && userPwd != null) {
       _loggingIn = _settingLoaded = true;
+      _autoLoginChecked = true;
       _idController.text = userId.toString();
       _pwdController.text = userPwd.toString();
       login();
@@ -197,12 +198,12 @@ class _LoginPageState extends State<LoginPage> {
       });
       return;
     }
-    final privFuture = HttpHelper.login(_idController.text, _pwdController.text);
-    privFuture.then((priv) {
-      _userInfoModel.login(_idController.text, priv);
+    final userInfoFuture = HttpHelper.login(_idController.text, _pwdController.text);
+    userInfoFuture.then((userInfo) {
+      _userInfoModel.login(userInfo);
       if (_autoLoginChecked) {
         _settingJson[SettingManager.userIdKey] = _idController.text.toString();
-        _settingJson[SettingManager.userPwdKey] = _pwdController.text.toString();
+        _settingJson[SettingManager.userPwdKey] = _pwdController.text.toString();        
       }
       else {
         _settingJson[SettingManager.userIdKey] = null;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class PageControlModel with ChangeNotifier {
   final _pageController = PageController();
   NavigatorState? _navigatorState;
+  int _index = 0;
 
   PageController getPageController() {
     return _pageController;    
@@ -14,5 +15,14 @@ class PageControlModel with ChangeNotifier {
 
   NavigatorState? getNavigatorState() {
     return _navigatorState;
+  }
+
+  void onPageChanged(int index) {
+    _index = index;
+    notifyListeners();
+  }
+
+  int getCurrentPageIndex() {
+    return _index;
   }
 }

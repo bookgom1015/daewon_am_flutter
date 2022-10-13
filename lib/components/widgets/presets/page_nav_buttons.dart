@@ -1,3 +1,4 @@
+import 'package:daewon_am/components/entries/page_list.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
 import 'package:daewon_am/components/models/page_control_model.dart';
@@ -7,7 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class PageNavButtons extends StatefulWidget {
-  const PageNavButtons({Key? key}) : super(key: key);
+  final PageList pageList;
+
+  const PageNavButtons({
+    Key? key,
+    required this.pageList}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _PageNavButtonsState();
@@ -33,18 +38,14 @@ class _PageNavButtonsState extends State<PageNavButtons> {
   late Color _foregroundColor;
   late Color _identityColor;
 
-  int _selectedIndex = 0;
   late double _rightPad;
 
-  final List<PageNavButton> _pageNavButtons = [
-    PageNavButton(Icons.description_rounded, 18, "회계", 0),
-    PageNavButton(Icons.manage_search, 20, "미수금", 1),
-    PageNavButton(Icons.bar_chart, 24, "차트", 2),
-  ];
+  late List<PageNavButton> _pageNavButtons;
 
   @override
   void initState() {
     super.initState();
+    _pageNavButtons = widget.pageList.getPageNavButtonList();
 
     final even = _pageNavButtons.length % 2 == 0;
     final half = _pageNavButtons.length ~/ 2;
@@ -76,9 +77,6 @@ class _PageNavButtonsState extends State<PageNavButtons> {
           children: _pageNavButtons.map((e) {
             return MouseReactionIconButton(
               onTap: () {
-                setState(() {
-                  _selectedIndex = e.index;
-                });
                 _pageController.animateToPage(
                   e.index, 
                   duration: pageTransitionDuration, 
@@ -108,7 +106,7 @@ class _PageNavButtonsState extends State<PageNavButtons> {
             curve: pageTransitionCurve,
             width: 30,
             height: 2,
-            margin: EdgeInsets.only(left: _selectedIndex * 80.0, right: _rightPad),
+            margin: EdgeInsets.only(left: _pageControlModel.getCurrentPageIndex() * 80.0, right: _rightPad),
             decoration: BoxDecoration(
               color: _identityColor,
               borderRadius: BorderRadius.circular(2)

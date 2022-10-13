@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:daewon_am/components/dialogs/accounting_data_edit_dialog.dart';
 import 'package:daewon_am/components/dialogs/accounting_data_remove_dialog.dart';
-import 'package:daewon_am/components/dialogs/importing_accounting_data_dialog.dart';
-import 'package:daewon_am/components/dialogs/ok_cancel_dialog.dart';
+import 'package:daewon_am/components/dialogs/accounting_data_import_dialog.dart';
 import 'package:daewon_am/components/dialogs/ok_dialog.dart';
 import 'package:daewon_am/components/entries/accounting_data.dart';
 import 'package:daewon_am/components/enums/privileges.dart';
@@ -14,6 +11,7 @@ import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
 import 'package:daewon_am/components/widgets/presets/accounting_data_grid.dart';
+import 'package:daewon_am/components/widgets/presets/data_grid_summary.dart';
 import 'package:daewon_am/components/widgets/presets/date_nav_column.dart';
 import 'package:daewon_am/components/widgets/presets/loading_indicator.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +28,7 @@ class AccountingPage extends StatefulWidget {
 class _AccountingPageState extends State<AccountingPage> {
   late ThemeSettingModel _themeModel;
   late UserInfoModel _userInfoModel;
+  late UserInfo _userInfo;
 
   late Color _foregroundColor;
   late Color _layerBackgrondColor;
@@ -72,11 +71,12 @@ class _AccountingPageState extends State<AccountingPage> {
     super.didChangeDependencies();
     _themeModel = context.watch<ThemeSettingModel>();
     _userInfoModel = context.watch<UserInfoModel>();
+    _userInfo = _userInfoModel.getUserInfo();
 
     loadColors();        
     buildControlButtonWidgets();
 
-    loadDates();    
+    if (_userInfoModel.getLoggedIn()) loadDates();
   }
 
   @override
@@ -93,7 +93,7 @@ class _AccountingPageState extends State<AccountingPage> {
       children: [
         Container(
           width: 200,
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.fromLTRB(10, 10, 5, 10),
           decoration: const BoxDecoration(
             color: Colors.transparent
           ),
@@ -106,7 +106,7 @@ class _AccountingPageState extends State<AccountingPage> {
         ),
         Expanded(
           child: Container(
-            margin: const EdgeInsets.all(10),
+            margin: const EdgeInsets.fromLTRB(5, 10, 10, 10),
             decoration: BoxDecoration(
               color: _layerBackgrondColor,
               borderRadius: BorderRadius.circular(8)
@@ -159,7 +159,12 @@ class _AccountingPageState extends State<AccountingPage> {
                       _loadingDataList ? const LoadingIndicator() : const SizedBox()
                     ],
                   ),
-                )
+                ),
+                Container(
+                  height: 40,
+                  color: _widgetBackgroundColor,
+                  child: DataGridSummary(dataList: _dataList),
+                ),
               ],
             ),
           )
@@ -210,9 +215,9 @@ class _AccountingPageState extends State<AccountingPage> {
       _controlButtonWidgets.add(controlButtonWidget(removeAccountingData, Icons.delete, "삭제"));
       break;
       case EPrivileges.eManager:
+      case EPrivileges.eObserver:
       _controlButtonWidgets.add(controlButtonWidget(exportAccountingData, Icons.print,"출력"));
       break;
-      case EPrivileges.eObserver:
       default:
       break;
     }
@@ -220,7 +225,6 @@ class _AccountingPageState extends State<AccountingPage> {
 
   void loadColors() {
     final themeType = _themeModel.getThemeType();
-
     _foregroundColor = ColorManager.getForegroundColor(themeType);
     _layerBackgrondColor = ColorManager.getLayerBackgroundColor(themeType);
     _widgetBackgroundColor = ColorManager.getWidgetBackgroundColor(themeType);
@@ -241,6 +245,7 @@ class _AccountingPageState extends State<AccountingPage> {
 
   void loadDates() {
     DataManager.loadDates(
+      token: _userInfo.token,
       onFinished: (dateMap) {
         if (!mounted) return;
         setState(() {
@@ -265,15 +270,14 @@ class _AccountingPageState extends State<AccountingPage> {
       });
       return;
     }
-
     setState(() {
       _selectedYear = year;
       _selectedMonth = _dateMap[year]!.contains(month) ? month : -1;
       _loadingDataList = true;
       _dataList.clear();
     });
-
     DataManager.loadAccountingData(
+      token: _userInfo.token,
       year: _selectedYear, 
       month: _selectedMonth,
       onFinished: (dataList) {
@@ -308,6 +312,7 @@ class _AccountingPageState extends State<AccountingPage> {
       _dataList.clear();
     });
     DataManager.searchAccountingData(
+      token: _userInfo.token,
       begin: _beginDate, 
       end: _endDate, 
       clientName: _searchBarTextEditingController.text, 
@@ -336,6 +341,7 @@ class _AccountingPageState extends State<AccountingPage> {
           onPressed: (data) {
             invalidate();
             DataManager.addAccountingData(
+              token: _userInfo.token,
               data: data,
               onFinised: () {
                 loadDates();
@@ -374,6 +380,7 @@ class _AccountingPageState extends State<AccountingPage> {
           onPressed: (data) {
             invalidate();
             DataManager.editAccountingData(
+              token: _userInfo.token,
               data: data,
               onFinised: () {
                 loadDates();
@@ -406,6 +413,7 @@ class _AccountingPageState extends State<AccountingPage> {
       onPressed: (dataList) {
         invalidate();
         DataManager.removeAccountingDataList(
+          token: _userInfo.token,
           dataList: dataList, 
           onFinised: () {
             loadDates();
@@ -431,6 +439,7 @@ class _AccountingPageState extends State<AccountingPage> {
               invalidate();
 
               DataManager.addAccountingDataList(
+                token: _userInfo.token,
                 dataList: dataList, 
                 onFinised: () {
                   loadDates();

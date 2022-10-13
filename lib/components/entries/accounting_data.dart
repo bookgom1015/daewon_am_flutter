@@ -41,7 +41,7 @@ class AccountingData {
   @override
   String toString() {
     final sb = StringBuffer();
-    sb.write("{ \"uid\" : ");                sb.write(uid);
+    sb.write("{ \"uid\" : ");               sb.write(uid);
     sb.write(", \"client_name\" : ");       sb.write("\"$clientName\"");
     sb.write(", \"date\" : ");              sb.write("\"$date\"");
     sb.write(", \"steel_weight\" : ");      sb.write(steelWeight);

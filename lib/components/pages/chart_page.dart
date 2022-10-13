@@ -34,6 +34,7 @@ class SimpleData {
 class _ChartPageState extends State<ChartPage> {
   late ThemeSettingModel _themeModel;
   late UserInfoModel _userInfoModel;
+  late UserInfo _userInfo;
 
   late Color _layerBackgrondColor;
   late Color _foregroundColor;
@@ -70,40 +71,45 @@ class _ChartPageState extends State<ChartPage> {
     super.didChangeDependencies();
     _themeModel = context.watch<ThemeSettingModel>();
     _userInfoModel = context.watch<UserInfoModel>();
+    _userInfo = _userInfoModel.getUserInfo();
 
     loadColors();
 
     _priv = _userInfoModel.getPrivileges();
 
-    DataManager.loadDates(
-      onFinished: (dateMap) {
-        if (mounted) {
-          setState(() {
-            _dateNavsLoaded = true;
-            _dateMap = dateMap;
-          });
+    if (_userInfoModel.getLoggedIn()) {
+      DataManager.loadDates(
+        token: _userInfo.token,
+        onFinished: (dateMap) {
+          if (mounted) {
+            setState(() {
+              _dateNavsLoaded = true;
+              _dateMap = dateMap;
+            });
+          }
+        },
+        onError: (err) {
+          showErrorDialog(err);
+        },
+        yearly: true,
+      );
+      DataManager.loadChartData(
+        token: _userInfo.token,
+        year: _selectedYear, 
+        month: _selectedMonth,
+        onFinished: (dataList) {
+          if (mounted) {
+            setState(() {
+              _loadingChartData = false;
+              _chartDataList = dataList;
+            });
+          }        
+        },
+        onError: (err) {
+          showErrorDialog(err);
         }
-      },
-      onError: (err) {
-        showErrorDialog(err);
-      },
-      yearly: true,
-    );
-    DataManager.loadChartData(
-      year: _selectedYear, 
-      month: _selectedMonth,
-      onFinished: (dataList) {
-        if (mounted) {
-          setState(() {
-            _loadingChartData = false;
-            _chartDataList = dataList;
-          });
-        }        
-      },
-      onError: (err) {
-        showErrorDialog(err);
-      }
-    );
+      );
+    }
   }
 
   @override
@@ -112,7 +118,7 @@ class _ChartPageState extends State<ChartPage> {
       children: [
         Container(
           width: 200,
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.fromLTRB(10, 10, 5, 10),
           decoration: const BoxDecoration(
             color: Colors.transparent
           ),
@@ -126,7 +132,7 @@ class _ChartPageState extends State<ChartPage> {
         ),
         Expanded(
           child: Container(
-            margin: const EdgeInsets.all(10),
+            margin: const EdgeInsets.fromLTRB(5, 10, 10, 10),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8)
             ),
@@ -216,7 +222,7 @@ class _ChartPageState extends State<ChartPage> {
                   alignment: Alignment.topRight,
                   child: Padding(
                     padding: const EdgeInsets.all(20),
-                    child: (_priv == EPrivileges.eNone || _priv == EPrivileges.eObserver) ? 
+                    child: _priv == EPrivileges.eNone ? 
                     const SizedBox() :
                     WidgetHelper.controlButtonWidget(
                       onTap: exportChartImage, 
@@ -302,6 +308,7 @@ class _ChartPageState extends State<ChartPage> {
     });
 
     DataManager.loadChartData(
+      token: _userInfo.token,
       year: _selectedYear, 
       month: _selectedMonth,
       onFinished: (dataList) {

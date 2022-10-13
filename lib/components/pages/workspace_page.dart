@@ -1,12 +1,14 @@
+import 'package:daewon_am/components/entries/page_list.dart';
 import 'package:daewon_am/components/models/page_control_model.dart';
-import 'package:daewon_am/components/pages/accounting_page.dart';
-import 'package:daewon_am/components/pages/chart_page.dart';
-import 'package:daewon_am/components/pages/receivable_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class WorkspacePage extends StatefulWidget {
-  const WorkspacePage({Key? key}) : super(key: key);
+  final PageList pageList;
+
+  const WorkspacePage({
+    Key? key,
+    required this.pageList}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _WorkspacePageState();
@@ -20,12 +22,7 @@ class _WorkspacePageState extends State<WorkspacePage> {
   @override
   void initState() {
     super.initState();
-
-    _pageList = [
-      const AccountingPage(),
-      const ReceivablePage(),
-      const ChartPage()
-    ];
+    _pageList = widget.pageList.getPageList();
   }
 
   @override
@@ -45,7 +42,10 @@ class _WorkspacePageState extends State<WorkspacePage> {
           itemCount: _pageList.length,
           itemBuilder: (_, index) {
             return _pageList[index];
-          }
+          },
+          onPageChanged: (index) {
+            _pageControlModel.onPageChanged(index);
+          },
         ),
       ),
     );
