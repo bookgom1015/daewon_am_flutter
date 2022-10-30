@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:daewon_am/components/dialogs/ok_dialog.dart';
 import 'package:daewon_am/components/enums/privileges.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/globals/global_routes.dart';
@@ -118,6 +119,17 @@ class _MyPageState extends State<MyPage> {
     );
   }
 
+  void showErrorDialog(String err) {
+    if (mounted) {
+      showOkDialog(
+        context: context, 
+        themeModel: _themeModel,
+        title: "오류",
+        message: err
+      );   
+    }
+  }
+
   void loadColors() {
     final themeType = _themeModel.getThemeType();
 
@@ -133,12 +145,14 @@ class _MyPageState extends State<MyPage> {
     _userInfoModel.logout();
     final settingFileFuture = SettingManager.getSettingFile();
     settingFileFuture.then((settingFile) {
-      final fileStrFutue = settingFile.readAsString();
-      fileStrFutue.then((fileStr) {
-        final settingJson = jsonDecode(fileStr);
+      final fileBytesFuture = settingFile.readAsBytes();
+      fileBytesFuture.then((fileBytes) {
+        final decoded = utf8.decode(fileBytes);
+        final settingJson = jsonDecode(decoded);
         settingJson[SettingManager.userIdKey] = null;
         settingJson[SettingManager.userPwdKey] = null;
-        final finished = settingFile.writeAsString(jsonEncode(settingJson));
+        final bytes = utf8.encode(jsonEncode(settingJson));
+        final finished = settingFile.writeAsBytes(bytes);
         finished.then((value) {
           Navigator.of(context).pop();
           _pageControlModel.onPageChanged(0);
@@ -146,6 +160,6 @@ class _MyPageState extends State<MyPage> {
           if (state != null) Navigator.pushNamedAndRemoveUntil(state.context, loginPageRoute, (route) => false);
         });
       });
-    });
+    });    
   }
 }

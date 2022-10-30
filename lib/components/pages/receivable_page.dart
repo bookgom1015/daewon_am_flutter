@@ -334,7 +334,17 @@ class _ReceivablePageState extends State<ReceivablePage> {
       );
       return;
     }
-    
+    final dataCell = row.getCells().firstWhere((element) => element.columnName == "data");
+    final selectedData = dataCell.value as AccountingData;
+    if (selectedData.dataType == false && _userInfo.priv == EPrivileges.eManager ) {
+      showOkDialog(
+        context: context, 
+        themeModel: _themeModel,
+        title: "경고",
+        message: "매출 데이터를 확인할 권한이 없습니다"                              
+      );
+      return;
+    }
     showDialog(
       context: context, 
       builder: (_) => ChangeNotifierProvider.value(

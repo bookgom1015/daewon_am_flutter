@@ -14,6 +14,7 @@ import 'package:daewon_am/components/widgets/buttons/mouse_reaction_button.dart'
 import 'package:daewon_am/components/widgets/buttons/mouse_reaction_icon_button.dart';
 import 'package:daewon_am/components/widgets/presets/loading_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -41,6 +42,9 @@ class _LoginPageState extends State<LoginPage> {
   final _idController = TextEditingController();
   final _pwdController = TextEditingController();
 
+  final _idFocusNode = FocusNode();
+  final _pwdFocusNode = FocusNode();
+
   bool _visible = false;
 
   bool _idIsValid = true;
@@ -64,6 +68,13 @@ class _LoginPageState extends State<LoginPage> {
     if (!_settingLoaded) {
       loadSettingFile();
     }
+  }
+
+  @override
+  void dispose() {
+    _idFocusNode.dispose();
+    _pwdFocusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -150,8 +161,9 @@ class _LoginPageState extends State<LoginPage> {
 
   void loadSettingFile() async {
     _settingFile = await SettingManager.getSettingFile();
-    final fileStr = await _settingFile.readAsString();
-    _settingJson = jsonDecode(fileStr);
+    final bytes = await _settingFile.readAsBytes();
+    final decoded = utf8.decode(bytes);
+    _settingJson = jsonDecode(decoded);
     final userId = _settingJson[SettingManager.userIdKey];
     final userPwd = _settingJson[SettingManager.userPwdKey];
     if (userId != null && userPwd != null) {
@@ -208,8 +220,9 @@ class _LoginPageState extends State<LoginPage> {
       else {
         _settingJson[SettingManager.userIdKey] = null;
         _settingJson[SettingManager.userPwdKey] = null;
-      }
-      final finished = _settingFile.writeAsString(jsonEncode(_settingJson));
+      };
+      final bytes = utf8.encode(jsonEncode(_settingJson));
+      final finished = _settingFile.writeAsBytes(bytes);
       finished.then((value) {
         Navigator.pushReplacementNamed(context, workspacePageRoute);
       });
@@ -229,63 +242,79 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget idTextFormFieldWidget() {
-    return TextFormField(
-      controller: _idController,
-      maxLength: 32,
-      style: TextStyle(
-        color: _foregroundColor,
-        fontSize: 14
-      ),
-      cursorColor: _cursorColor,
-      decoration: InputDecoration(
-        enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: _idIsValid ? _underlineColor : _underlineInvalidColor)
+    return RawKeyboardListener(
+      focusNode: _idFocusNode, 
+      onKey: (e) {
+        if (e.runtimeType == RawKeyDownEvent && e.logicalKey.keyId == LogicalKeyboardKey.enter.keyId) {
+          _pwdFocusNode.nextFocus();
+        }
+      },
+      child: TextFormField(
+        controller: _idController,
+        maxLength: 32,
+        style: TextStyle(
+          color: _foregroundColor,
+          fontSize: 14
         ),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: _idIsValid ? _underlineFocusedColor : _underlineInvalidFocusedColor)
+        cursorColor: _cursorColor,
+        decoration: InputDecoration(
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: _idIsValid ? _underlineColor : _underlineInvalidColor)
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: _idIsValid ? _underlineFocusedColor : _underlineInvalidFocusedColor)
+          ),
+          hintText: "아이디를 입력하세요",
+          hintStyle: TextStyle(
+            color: _hintTextColor
+          ),
+          counterText: "",
         ),
-        hintText: "아이디를 입력하세요",
-        hintStyle: TextStyle(
-          color: _hintTextColor
-        ),
-        counterText: "",
-      ),
+      )
     );
   }
 
   Widget pwdTextFormFieldWidget() {
-    return TextFormField(
-      controller: _pwdController,
-      maxLength: 32,
-      style: TextStyle(
-        color: _foregroundColor,
-        fontSize: 14
-      ),
-      cursorColor: _cursorColor,
-      obscureText: !_visible,
-      decoration: InputDecoration(
-        enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: _pwdIsValid ? _underlineColor : _underlineInvalidColor)
+    return RawKeyboardListener(
+      focusNode: _pwdFocusNode, 
+      onKey: (e) {
+        if (e.runtimeType == RawKeyDownEvent && e.logicalKey.keyId == LogicalKeyboardKey.enter.keyId) {
+          login();
+        }
+      },
+      child: TextFormField(
+        controller: _pwdController,
+        maxLength: 32,
+        style: TextStyle(
+          color: _foregroundColor,
+          fontSize: 14
         ),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: _pwdIsValid ? _underlineFocusedColor : _underlineInvalidFocusedColor)
-        ),
-        hintText: "패스워드를 입력하세요",
-        hintStyle: TextStyle(
-          color: _hintTextColor
-        ),
-        counterText: "",
-        suffixIcon: MouseReactionIconButton(
-          onTap: () {
-            setState(() {
-              _visible = !_visible;
-            });
-          },
-          icon: _visible ? Icons.visibility : Icons.visibility_off,
-          iconNormal: _underlineColor,
-          iconMouseOver: _underlineFocusedColor,
-        )
-      ),                        
+        cursorColor: _cursorColor,
+        obscureText: !_visible,
+        decoration: InputDecoration(
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: _pwdIsValid ? _underlineColor : _underlineInvalidColor)
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: _pwdIsValid ? _underlineFocusedColor : _underlineInvalidFocusedColor)
+          ),
+          hintText: "패스워드를 입력하세요",
+          hintStyle: TextStyle(
+            color: _hintTextColor
+          ),
+          counterText: "",
+          suffixIcon: MouseReactionIconButton(
+            onTap: () {
+              setState(() {
+                _visible = !_visible;
+              });
+            },
+            icon: _visible ? Icons.visibility : Icons.visibility_off,
+            iconNormal: _underlineColor,
+            iconMouseOver: _underlineFocusedColor,
+          )
+        ),                        
+      )
     );
   }
 

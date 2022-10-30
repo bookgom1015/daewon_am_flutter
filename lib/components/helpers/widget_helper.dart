@@ -4,6 +4,7 @@ import 'package:daewon_am/components/widgets/buttons/mouse_reaction_button.dart'
 import 'package:daewon_am/components/widgets/buttons/mouse_reaction_icon_button.dart';
 import 'package:daewon_am/components/widgets/date_pickers/simple_date_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 class WidgetHelper {
@@ -44,27 +45,35 @@ class WidgetHelper {
       color: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
-        child: TextFormField(
-          controller: textEditingController,
-          maxLength: 32,
-          style: TextStyle(
-            color: foregroundColor
-          ),
-          cursorColor: cursorColor,
-          decoration: InputDecoration(
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: underlineColor)
+        child: RawKeyboardListener(
+          focusNode: FocusNode(),
+          onKey: (e) {
+            if (e.runtimeType == RawKeyDownEvent && e.logicalKey.keyId == LogicalKeyboardKey.enter.keyId) {
+              onTap();
+            }
+          },
+          child: TextFormField(
+            controller: textEditingController,
+            maxLength: 32,
+            style: TextStyle(
+              color: foregroundColor
             ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: underlineFocusedColor)
+            cursorColor: cursorColor,
+            decoration: InputDecoration(
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: underlineColor)
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: underlineFocusedColor)
+              ),
+              suffixIcon: MouseReactionIconButton(
+                onTap: onTap,
+                iconNormal: iconNormal,
+                iconMouseOver: iconMouseOver,
+                icon: Icons.search,
+              ),
+              counterText: "",
             ),
-            suffixIcon: MouseReactionIconButton(
-              onTap: onTap,
-              iconNormal: iconNormal,
-              iconMouseOver: iconMouseOver,
-              icon: Icons.search,
-            ),
-            counterText: "",
           ),
         ),
       ),

@@ -20,7 +20,7 @@ class User {
     final sb = StringBuffer();
     sb.write("{ \"uid\" : ");         sb.write(uid);
     sb.write(", \"user_id\" : ");     sb.write("\"$userId\"");
-    sb.write(", \"user_pwd\" : ");     sb.write("\"$userPwd\"");
+    sb.write(", \"user_pwd\" : ");    sb.write("\"$userPwd\"");
     sb.write(", \"privileges\" : ");  sb.write(priv.id);
     sb.write(" }");
     return sb.toString();
