@@ -54,12 +54,21 @@ class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
   late Color? _iconColor;
   bool _hovering = false;
 
+  bool _firstCall = true;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+    }
+    onThemeModelChanged();
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -117,12 +126,10 @@ class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
-
     _tooltipBackgroundColor = ColorManager.getTooltipBackgroundColor(themeType);
     _tooltipForegroundColor = ColorManager.getTooltipForegroundColor(themeType);
-
     _color = _hovering ? widget.mouseOver : widget.normal;    
     _iconColor = _hovering ? widget.iconMouseOver : widget.iconNormal;
   }

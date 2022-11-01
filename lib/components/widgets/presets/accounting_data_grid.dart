@@ -48,7 +48,9 @@ class _AccountingDataGridState extends State<AccountingDataGrid> {
   final double _sumMinWidth = 120;
   final double _depsitDateMinWidth = 110;
 
-  late List<DataGridColumn> _dataColumnList; 
+  late List<DataGridColumn> _dataColumnList;
+
+  bool _firstCall = true;
 
   @override
   void initState() {
@@ -72,13 +74,17 @@ class _AccountingDataGridState extends State<AccountingDataGrid> {
   @override  
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-
-    loadColors();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
   }
 
   @override
   void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
     super.dispose();
   }
 
@@ -171,7 +177,7 @@ class _AccountingDataGridState extends State<AccountingDataGrid> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
     _layerBackgroundColor = ColorManager.getLayerBackgroundColor(themeType);
     _layerBackgroundTransparentColor = ColorManager.getLayerTransparentBackgroundColor(themeType);

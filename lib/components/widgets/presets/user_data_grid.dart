@@ -41,10 +41,11 @@ class _UserDataGridState extends State<UserDataGrid> {
   String _sortedColumn = "date";
   DataGridSortDirection _sortDirection = DataGridSortDirection.ascending;
 
+  bool _firstCall = true;
+
   @override
   void initState() {
     super.initState();
-
     _dataColumnList = [
       DataGridColumn("user", "", 0, false),
       DataGridColumn("userId", "아이디", _userIdMinWidth, true),
@@ -56,9 +57,18 @@ class _UserDataGridState extends State<UserDataGrid> {
   @override  
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
@@ -150,7 +160,7 @@ class _UserDataGridState extends State<UserDataGrid> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
     _layerBackgroundColor = ColorManager.getLayerBackgroundColor(themeType);
     _layerBackgroundTransparentColor = ColorManager.getLayerTransparentBackgroundColor(themeType);

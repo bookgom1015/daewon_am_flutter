@@ -34,7 +34,6 @@ class SimpleData {
 class _ChartPageState extends State<ChartPage> {
   late ThemeSettingModel _themeModel;
   late UserInfoModel _userInfoModel;
-  late UserInfo _userInfo;
 
   late Color _layerBackgrondColor;
   late Color _foregroundColor;
@@ -63,30 +62,26 @@ class _ChartPageState extends State<ChartPage> {
   String _title = "연간차트";
 
   final GlobalKey<SfCartesianChartState> _chartKey = GlobalKey();
-  
-  late EPrivileges _priv;
+
+  bool _firstCall = true;
 
   @override  
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-    _userInfoModel = context.watch<UserInfoModel>();
-    _userInfo = _userInfoModel.getUserInfo();
-
-    loadColors();
-
-    _priv = _userInfoModel.getPrivileges();
-
-    if (_userInfoModel.getLoggedIn()) {
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _userInfoModel = context.watch<UserInfoModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
       DataManager.loadDates(
-        token: _userInfo.token,
+        token: _userInfoModel.getToken(),
         onFinished: (dateMap) {
-          if (mounted) {
-            setState(() {
-              _dateNavsLoaded = true;
-              _dateMap = dateMap;
-            });
-          }
+          if (!mounted) return;
+          setState(() {
+            _dateNavsLoaded = true;
+            _dateMap = dateMap;
+          });
         },
         onError: (err) {
           showErrorDialog(err);
@@ -94,22 +89,27 @@ class _ChartPageState extends State<ChartPage> {
         yearly: true,
       );
       DataManager.loadChartData(
-        token: _userInfo.token,
+        token: _userInfoModel.getToken(),
         year: _selectedYear, 
         month: _selectedMonth,
         onFinished: (dataList) {
-          if (mounted) {
-            setState(() {
-              _loadingChartData = false;
-              _chartDataList = dataList;
-            });
-          }        
+          if (!mounted) return;
+          setState(() {
+            _loadingChartData = false;
+            _chartDataList = dataList;
+          });
         },
         onError: (err) {
           showErrorDialog(err);
         }
       );
-    }
+    }    
+  }
+
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
@@ -222,7 +222,7 @@ class _ChartPageState extends State<ChartPage> {
                   alignment: Alignment.topRight,
                   child: Padding(
                     padding: const EdgeInsets.all(20),
-                    child: _priv == EPrivileges.eNone ? 
+                    child: _userInfoModel.getPrivileges() == EPrivileges.eNone ? 
                     const SizedBox() :
                     WidgetHelper.controlButtonWidget(
                       onTap: exportChartImage, 
@@ -245,19 +245,17 @@ class _ChartPageState extends State<ChartPage> {
   }
 
   void showErrorDialog(String err) {
-    if (mounted) {
-      showOkDialog(
-        context: context, 
-        themeModel: _themeModel,
-        title: "오류",
-        message: err
-      );   
-    }
+    if (!mounted) return;
+    showOkDialog(
+      context: context, 
+      themeModel: _themeModel,
+      title: "오류",
+      message: err
+    );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
-
     _layerBackgrondColor = ColorManager.getLayerBackgroundColor(themeType);
     _foregroundColor = ColorManager.getForegroundColor(themeType);
     _chartLabelColor = ColorManager.getChartLabelColor(themeType);
@@ -269,7 +267,6 @@ class _ChartPageState extends State<ChartPage> {
     _widgetBackgroundMouseOverColor = ColorManager.getWidgetBackgroundMouseOverColor(themeType);
     _widgetForegroundColor = ColorManager.getWidgetIconForegroundColor(themeType);
     _widgetForegroundMouseOverColor = ColorManager.getWidgetIconForegroundMouseOverColor(themeType);
-
     _foregrundTextStyle = TextStyle(
       color: _foregroundColor
     );
@@ -287,7 +284,6 @@ class _ChartPageState extends State<ChartPage> {
       });
       return;
     }
-
     String title;
     if (year == -1 && month == -1) {
       title = "연간차트";
@@ -298,7 +294,6 @@ class _ChartPageState extends State<ChartPage> {
     else {
       title = "$year년 $month월 일간차트";
     }
-
     setState(() {
       _selectedYear = year;
       _selectedMonth = month;
@@ -306,18 +301,16 @@ class _ChartPageState extends State<ChartPage> {
       _chartDataList.clear();
       _title = title;
     });
-
     DataManager.loadChartData(
-      token: _userInfo.token,
+      token: _userInfoModel.getToken(),
       year: _selectedYear, 
       month: _selectedMonth,
       onFinished: (dataList) {
-        if (mounted) {
-          setState(() {
-            _loadingChartData = false;
-            _chartDataList = dataList;
-          });
-        }        
+        if (!mounted) return;
+        setState(() {
+          _loadingChartData = false;
+          _chartDataList = dataList;
+        });       
       },
       onError: (err) {
         showErrorDialog(err);
@@ -332,24 +325,16 @@ class _ChartPageState extends State<ChartPage> {
         allowedExtensions: ["png"],
         fileName: "차트.png",
         lockParentWindow: true
-      );    
-
+      );
       if (fileName == null) return;
       if (!fileName.contains(".png")) fileName = "$fileName.png";
-
       final imageData = await _chartKey.currentState!.toImage(pixelRatio: 3);
       final bytes = await imageData.toByteData(format: ImageByteFormat.png);
-
       final File file = File(fileName);
       await file.writeAsBytes(bytes!.buffer.asInt8List(), flush: true);
     }
     catch (e) {
-      showOkDialog(
-        context: context, 
-        themeModel: _themeModel,
-        title: "오류",
-        message: e.toString()
-      );      
+      showErrorDialog(e.toString());
     }
   }
 }

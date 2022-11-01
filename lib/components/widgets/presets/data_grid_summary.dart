@@ -22,12 +22,23 @@ class _DataGridSummaryState extends State<DataGridSummary> {
   late Color _foregroundColor;
   late TextStyle _textStyle;
 
+  bool _firstCall = true;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
@@ -71,7 +82,7 @@ class _DataGridSummaryState extends State<DataGridSummary> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
     _foregroundColor = ColorManager.getForegroundColor(themeType);
     _textStyle = TextStyle(

@@ -4,9 +4,11 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:daewon_am/components/dialogs/ok_dialog.dart';
 import 'package:daewon_am/components/entries/page_list.dart';
 import 'package:daewon_am/components/enums/privileges.dart';
+import 'package:daewon_am/components/enums/theme_types.dart';
 import 'package:daewon_am/components/globals/global_routes.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
 import 'package:daewon_am/components/helpers/http_helper.dart';
+import 'package:daewon_am/components/helpers/setting_manager.dart';
 import 'package:daewon_am/components/models/page_control_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
 import 'package:daewon_am/components/pages/accounting_page.dart';
@@ -38,29 +40,41 @@ class _MainPageState extends State<MainPage> {
   late UserInfoModel _userInfoModel;
   late PageControlModel _pageControlModel;
 
+  late Color _backgroundColor;
+
   final _navigatorState = GlobalKey<NavigatorState>();
 
   bool _checked = false;
+  bool _firstCall = true;
 
   final _pageList = PageList();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-    _userInfoModel = context.watch<UserInfoModel>();
-    _pageControlModel = context.watch<PageControlModel>();
-
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _userInfoModel = context.watch<UserInfoModel>();
+      _pageControlModel = context.watch<PageControlModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      _userInfoModel.addListener(onUserInfoModelChanged);
+      onThemeModelChanged();
+      onUserInfoModelChanged();
+      loadThemeSetting();
+      checkLastVersion();
+    }
     _pageControlModel.setNaviatorStae(_navigatorState.currentState);
+  }
 
-    checkLastVersion();
-    buildPageList();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeType = _themeModel.getThemeType();
-    final backgroundColor = ColorManager.getBackgroundColor(themeType);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -68,7 +82,7 @@ class _MainPageState extends State<MainPage> {
           duration: colorChangeDuration,
           curve: colorChangeCurve,
           decoration: BoxDecoration(
-            color: backgroundColor
+            color: _backgroundColor
           ),
           height: 40,
           child: WindowTitleBarBox(
@@ -99,7 +113,7 @@ class _MainPageState extends State<MainPage> {
             duration: colorChangeDuration,
             curve: colorChangeCurve,
             decoration: BoxDecoration(
-              color: backgroundColor
+              color: _backgroundColor
             ),
             child: _checked ? Navigator(
               key: _navigatorState,
@@ -114,7 +128,6 @@ class _MainPageState extends State<MainPage> {
 
   Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     late Widget page;
-
     if (settings.name == loginPageRoute) {
       page = const LoginPage();
     }
@@ -124,13 +137,34 @@ class _MainPageState extends State<MainPage> {
     else {
       throw Exception("Unknown route: ${settings.name}");
     }
-
     return MaterialPageRoute(
       builder: (context) {
         return page;
       },
       settings: settings
     );
+  }
+
+  void onThemeModelChanged() {
+    final themeType = _themeModel.getThemeType();
+    _backgroundColor = ColorManager.getBackgroundColor(themeType);
+  }
+
+  void onUserInfoModelChanged() {
+    _pageList.clear();
+    _pageList.addPage(const AccountingPage(), PageNavButton(Icons.description_rounded, 18, "회계", 0));
+    _pageList.addPage(const ReceivablePage(), PageNavButton(Icons.manage_search, 20, "미수금", 1));
+    _pageList.addPage(const ChartPage(), PageNavButton(Icons.bar_chart, 24, "차트", 2));
+    if (_userInfoModel.getPrivileges() == EPrivileges.eAdmin) {
+      _pageList.addPage(const AdminPage(), PageNavButton(Icons.admin_panel_settings, 20, "관리자", 3));
+    }
+  }
+
+  void loadThemeSetting() {
+    final themeTypeFuture = SettingManager.getThemeSetting();
+    themeTypeFuture.then((themeType) {
+      _themeModel.changeTheme(themeType);
+    });
   }
 
   void checkLastVersion() {
@@ -159,33 +193,26 @@ class _MainPageState extends State<MainPage> {
           );
           return;
         }
+        if (!mounted) return;
         setState(() {
           _checked = true;
         });
       });      
     })
     .catchError((_) {
+      if (!mounted) return;
       showOkDialog(
         context: context, 
         themeModel: _themeModel,
         title: "오류",
         message: "버전 정보를 불러오지 못 했습니다",
         onPressed: () {
+          if (!mounted) return;
           setState(() {
             _checked = true;
           });
         }
       );
     });
-  }
-
-  void buildPageList() {
-    _pageList.clear();
-    _pageList.addPage(const AccountingPage(), PageNavButton(Icons.description_rounded, 18, "회계", 0));
-    _pageList.addPage(const ReceivablePage(), PageNavButton(Icons.manage_search, 20, "미수금", 1));
-    _pageList.addPage(const ChartPage(), PageNavButton(Icons.bar_chart, 24, "차트", 2));
-    if (_userInfoModel.getPrivileges() == EPrivileges.eAdmin) {
-      _pageList.addPage(const AdminPage(), PageNavButton(Icons.admin_panel_settings, 20, "관리자", 3));
-    }
   }
 }

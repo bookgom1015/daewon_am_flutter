@@ -14,7 +14,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class MyPage extends StatefulWidget {
-  const MyPage({Key? key}) : super(key: key);
+  final BuildContext parentContext;
+
+  const MyPage({
+    Key? key,
+    required this.parentContext}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _MyPageState();
@@ -31,16 +35,25 @@ class _MyPageState extends State<MyPage> {
   late Color _foregroundColor;
   late Color _widgetColor;
 
-  bool _loggingOut = false;
+  bool _firstCall = true;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-    _userInfoModel = context.watch<UserInfoModel>();
-    _pageControlModel = context.watch<PageControlModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _userInfoModel = context.watch<UserInfoModel>();
+      _pageControlModel = context.watch<PageControlModel>();  
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();    
   }
 
   @override
@@ -119,20 +132,8 @@ class _MyPageState extends State<MyPage> {
     );
   }
 
-  void showErrorDialog(String err) {
-    if (mounted) {
-      showOkDialog(
-        context: context, 
-        themeModel: _themeModel,
-        title: "오류",
-        message: err
-      );   
-    }
-  }
-
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
-
     _normal = ColorManager.getLogoutButtonBackgroundColor(themeType);
     _mouseOver = ColorManager.getLogoutButtonBackgroundMouseOverColor(themeType);
     _foregroundColor = ColorManager.getForegroundColor(themeType);
@@ -140,26 +141,24 @@ class _MyPageState extends State<MyPage> {
   }
 
   void logout() {
-    if (_loggingOut) return;
-    _loggingOut = true;
+    if (!_userInfoModel.getLoggedIn()) return;
     _userInfoModel.logout();
-    final settingFileFuture = SettingManager.getSettingFile();
-    settingFileFuture.then((settingFile) {
-      final fileBytesFuture = settingFile.readAsBytes();
-      fileBytesFuture.then((fileBytes) {
-        final decoded = utf8.decode(fileBytes);
-        final settingJson = jsonDecode(decoded);
-        settingJson[SettingManager.userIdKey] = null;
-        settingJson[SettingManager.userPwdKey] = null;
-        final bytes = utf8.encode(jsonEncode(settingJson));
-        final finished = settingFile.writeAsBytes(bytes);
-        finished.then((value) {
-          Navigator.of(context).pop();
-          _pageControlModel.onPageChanged(0);
-          final state = _pageControlModel.getNavigatorState();
-          if (state != null) Navigator.pushNamedAndRemoveUntil(state.context, loginPageRoute, (route) => false);
-        });
-      });
-    });    
+    final finished = SettingManager.setUserInfoJson(jsonDecode("{}"));
+    finished.then((value) {
+      final state = _pageControlModel.getNavigatorState();
+      if (state == null) {
+        if (!mounted) return;
+        showOkDialog(
+          context: context, 
+          themeModel: _themeModel,
+          title: "경고",
+          message: "잘못된 context가 감지되었습니다"
+        );
+        return;
+      }
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      _pageControlModel.reset();
+      Navigator.pushNamedAndRemoveUntil(state.context, loginPageRoute, (route) => false);
+    }); 
   }
 }

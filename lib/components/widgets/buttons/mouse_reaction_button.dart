@@ -34,14 +34,8 @@ class _MouseReactionButtonState extends State<MouseReactionButton> {
   bool _hovering = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    loadColors();
-    
+    _color = _hovering ? widget.mouseOver : widget.normal;
     return Container(
       width: widget.width,
       height: widget.height,
@@ -74,9 +68,5 @@ class _MouseReactionButtonState extends State<MouseReactionButton> {
         ),
       ),
     );
-  }
-
-  void loadColors() {
-    _color = _hovering ? widget.mouseOver : widget.normal;
   }
 }

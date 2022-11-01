@@ -31,8 +31,6 @@ class _PageNavButtonsState extends State<PageNavButtons> {
   late ThemeSettingModel _themeModel;
   late PageControlModel _pageControlModel;
 
-  late PageController _pageController;
-
   late Color _normal;
   late Color _mouseOver;
   late Color _foregroundColor;
@@ -42,11 +40,12 @@ class _PageNavButtonsState extends State<PageNavButtons> {
 
   late List<PageNavButton> _pageNavButtons;
 
+  bool _firstCall = true;
+
   @override
   void initState() {
     super.initState();
     _pageNavButtons = widget.pageList.getPageNavButtonList();
-
     final even = _pageNavButtons.length % 2 == 0;
     final half = _pageNavButtons.length ~/ 2;
     if (even) {
@@ -60,12 +59,19 @@ class _PageNavButtonsState extends State<PageNavButtons> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-    _pageControlModel = context.watch<PageControlModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _pageControlModel = context.watch<PageControlModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    _pageController = _pageControlModel.getPageController();
-
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();    
   }
 
   @override
@@ -77,7 +83,7 @@ class _PageNavButtonsState extends State<PageNavButtons> {
           children: _pageNavButtons.map((e) {
             return MouseReactionIconButton(
               onTap: () {
-                _pageController.animateToPage(
+                _pageControlModel.getPageController().animateToPage(
                   e.index, 
                   duration: pageTransitionDuration, 
                   curve: pageTransitionCurve,
@@ -117,9 +123,8 @@ class _PageNavButtonsState extends State<PageNavButtons> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     var themeType = _themeModel.getThemeType();
-
     _normal = ColorManager.getIdentityColor(themeType);
     _mouseOver = ColorManager.getIdentityMouseOverColor(themeType);
     _foregroundColor = ColorManager.getForegroundColor(themeType);

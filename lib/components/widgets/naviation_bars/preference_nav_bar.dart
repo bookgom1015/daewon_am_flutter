@@ -28,14 +28,8 @@ class _PreferenceNavBarState extends State<PreferenceNavBar> {
   int _selectedIndex = 0;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     var padding = _selectedIndex * widget.width;
-
     return SizedBox(
       height: 50,
       child: Column(
@@ -118,7 +112,6 @@ class _PreferenceNavBarState extends State<PreferenceNavBar> {
       duration: pageTransitionDuration,
       curve: pageTransitionCurve,
     );
-
     _selectedIndex = index;
   }
 }

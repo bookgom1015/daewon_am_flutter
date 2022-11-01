@@ -36,19 +36,29 @@ class _DateNavButtonState extends State<DateNavButton> {
   final double _dateNavHeight = 40;
   final double _dateNavVerticalMargin = 10;
 
+  bool _firstCall = true;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     bool selected = widget.year == widget.selectedYear && widget.month == widget.selectedMonth;
     bool monthly = widget.month != -1;
-
     return Container(
       height: _dateNavHeight,
       margin: EdgeInsets.only(left: monthly ? 25 : 0, bottom: _dateNavVerticalMargin),
@@ -94,13 +104,11 @@ class _DateNavButtonState extends State<DateNavButton> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
-
     _foregroundColor = ColorManager.getForegroundColor(themeType);
     _widgetBackgrondColor = ColorManager.getWidgetBackgroundColor(themeType);
     _widgetBackgrondMouseOverColor = ColorManager.getWidgetBackgroundMouseOverColor(themeType);
-
     _color = _widgetBackgrondColor;
   }
 }

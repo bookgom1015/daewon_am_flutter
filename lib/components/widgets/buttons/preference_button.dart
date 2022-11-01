@@ -25,6 +25,8 @@ class _PreferenceButtonState extends State<PreferenceButton> {
   late Color _iconNormal;
   late Color _iconMouseOver;
 
+  bool _firstCall = true;
+
   @override
   void initState() {
     super.initState();
@@ -33,11 +35,20 @@ class _PreferenceButtonState extends State<PreferenceButton> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-    _userInfoModel = context.watch<UserInfoModel>();
-    _pageControlModel = context.watch<PageControlModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _userInfoModel = context.watch<UserInfoModel>();
+      _pageControlModel = context.watch<PageControlModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
@@ -74,9 +85,8 @@ class _PreferenceButtonState extends State<PreferenceButton> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     var themeType = _themeModel.getThemeType();
-
     _normal = ColorManager.getBackgroundColor(themeType);
     _mouseOver = ColorManager.getTitleBarButtonMouseOverBackgroundColor(themeType);
     _iconNormal = ColorManager.getTitleBarButtonIconColor(themeType);

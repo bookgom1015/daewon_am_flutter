@@ -15,10 +15,15 @@ class WindowButtons extends StatefulWidget {
 class _WindowButtonsState extends State<WindowButtons> {  
   late ThemeSettingModel _themeModel;
 
+  bool _firstCall = true;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+    }
   }
 
   @override

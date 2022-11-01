@@ -28,7 +28,6 @@ class AccountingPage extends StatefulWidget {
 class _AccountingPageState extends State<AccountingPage> {
   late ThemeSettingModel _themeModel;
   late UserInfoModel _userInfoModel;
-  late UserInfo _userInfo;
 
   late Color _foregroundColor;
   late Color _layerBackgrondColor;
@@ -57,10 +56,11 @@ class _AccountingPageState extends State<AccountingPage> {
 
   final List<Widget> _controlButtonWidgets = [];
 
+  bool _firstCall = true;
+
   @override
   void initState() {
     super.initState();
-
     final now = DateTime.now();
     _beginDate = DateTime(now.year, now.month, 1);
     _endDate = now;
@@ -69,18 +69,19 @@ class _AccountingPageState extends State<AccountingPage> {
   @override  
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-    _userInfoModel = context.watch<UserInfoModel>();
-    _userInfo = _userInfoModel.getUserInfo();
-
-    loadColors();        
-    buildControlButtonWidgets();
-
-    if (_userInfoModel.getLoggedIn()) loadDates();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _userInfoModel = context.watch<UserInfoModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+      loadDates();
+    }
   }
 
   @override
   void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
     _searchBarTextEditingController.dispose();
     _dataGridController.dispose();
     super.dispose();
@@ -174,32 +175,30 @@ class _AccountingPageState extends State<AccountingPage> {
   }
 
   void showErrorDialog(String err) {
-    if (mounted) {
-      showOkDialog(
-        context: context, 
-        themeModel: _themeModel,
-        title: "오류",
-        message: err
-      );   
-    }
-  }
-
-  Widget controlButtonWidget(void Function() onTap, IconData icon, String tooltip) {
-    return WidgetHelper.controlButtonWidget(
-      onTap: onTap,
-      normal: _widgetBackgroundColor, 
-      mouseOver: _widgetBackgroundMouseOverColor,
-      iconNormal: _widgetForegroundColor,
-      iconMouseOver: _widgetForegroundMouseOverColor,
-      icon: icon,
-      tooltip: tooltip,
+    if (!mounted) return;
+    showOkDialog(
+      context: context, 
+      themeModel: _themeModel,
+      title: "오류",
+      message: err
     );
   }
 
-  void buildControlButtonWidgets() {
-    final priv = _userInfoModel.getPrivileges();
+  void onThemeModelChanged() {
+    // 컬러 불러오기
+    final themeType = _themeModel.getThemeType();
+    _foregroundColor = ColorManager.getForegroundColor(themeType);
+    _layerBackgrondColor = ColorManager.getLayerBackgroundColor(themeType);
+    _widgetBackgroundColor = ColorManager.getWidgetBackgroundColor(themeType);
+    _widgetBackgroundMouseOverColor = ColorManager.getWidgetBackgroundMouseOverColor(themeType);
+    _widgetForegroundColor = ColorManager.getWidgetIconForegroundColor(themeType);
+    _widgetForegroundMouseOverColor = ColorManager.getWidgetIconForegroundMouseOverColor(themeType);
+    _underlineColor = ColorManager.getTextFormFieldUnderlineColor(themeType);
+    _underlineFocusedColor = ColorManager.getTextFormFieldUnderlineFocusedColor(themeType);
+    _cursorColor = ColorManager.getCursorColor(themeType);
+    // 컨트롤 버튼 빌드
     _controlButtonWidgets.clear();
-    switch (priv) {
+    switch (_userInfoModel.getPrivileges()) {
       case EPrivileges.eAdmin:
       _controlButtonWidgets.add(controlButtonWidget(importAccountingData, Icons.input, "입력"));
       _controlButtonWidgets.add(controlButtonWidget(exportAccountingData, Icons.print,"출력"));
@@ -223,19 +222,6 @@ class _AccountingPageState extends State<AccountingPage> {
     }
   }
 
-  void loadColors() {
-    final themeType = _themeModel.getThemeType();
-    _foregroundColor = ColorManager.getForegroundColor(themeType);
-    _layerBackgrondColor = ColorManager.getLayerBackgroundColor(themeType);
-    _widgetBackgroundColor = ColorManager.getWidgetBackgroundColor(themeType);
-    _widgetBackgroundMouseOverColor = ColorManager.getWidgetBackgroundMouseOverColor(themeType);
-    _widgetForegroundColor = ColorManager.getWidgetIconForegroundColor(themeType);
-    _widgetForegroundMouseOverColor = ColorManager.getWidgetIconForegroundMouseOverColor(themeType);
-    _underlineColor = ColorManager.getTextFormFieldUnderlineColor(themeType);
-    _underlineFocusedColor = ColorManager.getTextFormFieldUnderlineFocusedColor(themeType);
-    _cursorColor = ColorManager.getCursorColor(themeType);
-  }
-
   void invalidate() {
     setState(() {
       _loadingDataList = true;
@@ -245,7 +231,7 @@ class _AccountingPageState extends State<AccountingPage> {
 
   void loadDates() {
     DataManager.loadDates(
-      token: _userInfo.token,
+      token: _userInfoModel.getToken(),
       onFinished: (dateMap) {
         if (!mounted) return;
         setState(() {
@@ -255,7 +241,7 @@ class _AccountingPageState extends State<AccountingPage> {
         loadAccountingData(_selectedYear, _selectedMonth);
       },
       onError: (err) {
-        showErrorDialog(err);        
+        showErrorDialog(err);
       }
     );
   }
@@ -277,26 +263,25 @@ class _AccountingPageState extends State<AccountingPage> {
       _dataList.clear();
     });
     DataManager.loadAccountingData(
-      token: _userInfo.token,
+      token: _userInfoModel.getToken(),
       year: _selectedYear, 
       month: _selectedMonth,
       onFinished: (dataList) {
-        if (mounted) {
-          setState(() {
-            _loadingDataList = false;
-            _dataList = dataList;
-          });
-        }
+        if (!mounted) return;
+        setState(() {
+          _loadingDataList = false;
+          _dataList = dataList;
+        });
       },
       onError: (err) {
-        showErrorDialog(err);        
+        showErrorDialog(err);
       }
     );
   }
 
   void searchAccountingData() {
     if (_loadingDataList) return;
-    if (_searchBarTextEditingController.text == "") {
+    if (_searchBarTextEditingController.text.isEmpty) {
       showOkDialog(
         context: context, 
         themeModel: _themeModel,
@@ -312,17 +297,16 @@ class _AccountingPageState extends State<AccountingPage> {
       _dataList.clear();
     });
     DataManager.searchAccountingData(
-      token: _userInfo.token,
+      token: _userInfoModel.getToken(),
       begin: _beginDate, 
       end: _endDate, 
       clientName: _searchBarTextEditingController.text, 
       onFinished: (dataList) {
-        if (mounted) {
-          setState(() {
-            _loadingDataList = false;
-            _dataList = dataList;
-          });
-        }
+        if (!mounted) return;
+        setState(() {
+          _loadingDataList = false;
+          _dataList = dataList;
+        });
       },
       onError: (err) {
         showErrorDialog(err);        
@@ -341,7 +325,7 @@ class _AccountingPageState extends State<AccountingPage> {
           onPressed: (data) {
             invalidate();
             DataManager.addAccountingData(
-              token: _userInfo.token,
+              token: _userInfoModel.getToken(),
               data: data,
               onFinised: () {
                 loadDates();
@@ -380,7 +364,7 @@ class _AccountingPageState extends State<AccountingPage> {
           onPressed: (data) {
             invalidate();
             DataManager.editAccountingData(
-              token: _userInfo.token,
+              token: _userInfoModel.getToken(),
               data: data,
               onFinised: () {
                 loadDates();
@@ -413,7 +397,7 @@ class _AccountingPageState extends State<AccountingPage> {
       onPressed: (dataList) {
         invalidate();
         DataManager.removeAccountingDataList(
-          token: _userInfo.token,
+          token: _userInfoModel.getToken(),
           dataList: dataList, 
           onFinised: () {
             loadDates();
@@ -437,9 +421,8 @@ class _AccountingPageState extends State<AccountingPage> {
             dataList: dataList,
             onPressed: () {
               invalidate();
-
               DataManager.addAccountingDataList(
-                token: _userInfo.token,
+                token: _userInfoModel.getToken(),
                 dataList: dataList, 
                 onFinised: () {
                   loadDates();
@@ -468,7 +451,6 @@ class _AccountingPageState extends State<AccountingPage> {
       );
       return;
     }
-
     try {
       await ExcelManager.exportAccountingData(
         dataList: _dataList,
@@ -478,5 +460,17 @@ class _AccountingPageState extends State<AccountingPage> {
     catch (e) {
       showErrorDialog(e.toString());
     }
+  }
+
+  Widget controlButtonWidget(void Function() onTap, IconData icon, String tooltip) {
+    return WidgetHelper.controlButtonWidget(
+      onTap: onTap,
+      normal: _widgetBackgroundColor, 
+      mouseOver: _widgetBackgroundMouseOverColor,
+      iconNormal: _widgetForegroundColor,
+      iconMouseOver: _widgetForegroundMouseOverColor,
+      icon: icon,
+      tooltip: tooltip,
+    );
   }
 }

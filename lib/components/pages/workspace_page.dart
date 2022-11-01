@@ -19,6 +19,8 @@ class _WorkspacePageState extends State<WorkspacePage> {
 
   late List<Widget> _pageList;
 
+  bool _firstCall = false;
+
   @override
   void initState() {
     super.initState();
@@ -28,7 +30,10 @@ class _WorkspacePageState extends State<WorkspacePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _pageControlModel = context.watch<PageControlModel>();
+    if (!_firstCall) {
+      _firstCall = true;
+      _pageControlModel = context.watch<PageControlModel>();
+    }
   }
 
   @override

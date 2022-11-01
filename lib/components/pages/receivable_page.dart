@@ -26,7 +26,6 @@ class ReceivablePage extends StatefulWidget {
 class _ReceivablePageState extends State<ReceivablePage> {
   late ThemeSettingModel _themeModel;
   late UserInfoModel _userInfoModel;
-  late UserInfo _userInfo;
 
   late Color _foregroundColor;
   late Color _layerBackgrondColor;
@@ -55,10 +54,11 @@ class _ReceivablePageState extends State<ReceivablePage> {
 
   final List<Widget> _controlButtonWidgets = [];
 
+  bool _firstCall = true;
+
   @override
   void initState() {
     super.initState();
-
     final now = DateTime.now();
     _beginDate = DateTime(now.year, now.month, 1);
     _endDate = now;
@@ -67,18 +67,19 @@ class _ReceivablePageState extends State<ReceivablePage> {
   @override  
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-    _userInfoModel = context.watch<UserInfoModel>();
-    _userInfo = _userInfoModel.getUserInfo();
-
-    loadColors();
-    buildControlButtonWidgets();
-
-    if (_userInfoModel.getLoggedIn()) loadDates();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _userInfoModel = context.watch<UserInfoModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+      loadDates();
+    }
   }
 
   @override
   void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
     _searchBarTextEditingController.dispose();
     _dataGridController.dispose();
     super.dispose();
@@ -171,32 +172,30 @@ class _ReceivablePageState extends State<ReceivablePage> {
   }  
 
   void showErrorDialog(String err) {
-    if (mounted) {
-      showOkDialog(
-        context: context, 
-        themeModel: _themeModel,
-        title: "오류",
-        message: err
-      );   
-    }
-  }
-
-  Widget controlButtonWidget(void Function() onTap, IconData icon, String tooltip) {
-    return WidgetHelper.controlButtonWidget(
-      onTap: onTap,
-      normal: _widgetBackgroundColor, 
-      mouseOver: _widgetBackgroundMouseOverColor,
-      iconNormal: _widgetForegroundColor,
-      iconMouseOver: _widgetForegroundMouseOverColor,
-      icon: icon,
-      tooltip: tooltip,
+    if (!mounted) return;
+    showOkDialog(
+      context: context, 
+      themeModel: _themeModel,
+      title: "오류",
+      message: err
     );
   }
 
-  void buildControlButtonWidgets() {
-    final priv = _userInfoModel.getPrivileges();
+  void onThemeModelChanged() {
+    // 컬러 불러오기
+    final themeType = _themeModel.getThemeType();
+    _foregroundColor = ColorManager.getForegroundColor(themeType);
+    _layerBackgrondColor = ColorManager.getLayerBackgroundColor(themeType);
+    _widgetBackgroundColor = ColorManager.getWidgetBackgroundColor(themeType);
+    _widgetBackgroundMouseOverColor = ColorManager.getWidgetBackgroundMouseOverColor(themeType);
+    _widgetForegroundColor = ColorManager.getWidgetIconForegroundColor(themeType);
+    _widgetForegroundMouseOverColor = ColorManager.getWidgetIconForegroundMouseOverColor(themeType);
+    _underlineColor = ColorManager.getTextFormFieldUnderlineColor(themeType);
+    _underlineFocusedColor = ColorManager.getTextFormFieldUnderlineFocusedColor(themeType);
+    _cursorColor = ColorManager.getCursorColor(themeType);
+    // 컨트롤 버튼 빌드
     _controlButtonWidgets.clear();
-    switch (priv) {
+    switch (_userInfoModel.getPrivileges()) {
       case EPrivileges.eAdmin:
       case EPrivileges.eAccountant:
       case EPrivileges.eManager:
@@ -211,20 +210,6 @@ class _ReceivablePageState extends State<ReceivablePage> {
     }
   }
 
-  void loadColors() {
-    final themeType = _themeModel.getThemeType();
-
-    _foregroundColor = ColorManager.getForegroundColor(themeType);
-    _layerBackgrondColor = ColorManager.getLayerBackgroundColor(themeType);
-    _widgetBackgroundColor = ColorManager.getWidgetBackgroundColor(themeType);
-    _widgetBackgroundMouseOverColor = ColorManager.getWidgetBackgroundMouseOverColor(themeType);
-    _widgetForegroundColor = ColorManager.getWidgetIconForegroundColor(themeType);
-    _widgetForegroundMouseOverColor = ColorManager.getWidgetIconForegroundMouseOverColor(themeType);
-    _underlineColor = ColorManager.getTextFormFieldUnderlineColor(themeType);
-    _underlineFocusedColor = ColorManager.getTextFormFieldUnderlineFocusedColor(themeType);
-    _cursorColor = ColorManager.getCursorColor(themeType);
-  }
-
   void invalidate() {
     setState(() {
       _loadingDataList = true;
@@ -234,7 +219,7 @@ class _ReceivablePageState extends State<ReceivablePage> {
 
   void loadDates() {
     DataManager.loadDates(
-      token: _userInfo.token,
+      token: _userInfoModel.getToken(),
       onFinished: (dateMap) {
         if (!mounted) return;
         setState(() {
@@ -244,7 +229,7 @@ class _ReceivablePageState extends State<ReceivablePage> {
         loadAccountingData(_selectedYear, _selectedMonth);
       },
       onError: (err) {
-        showErrorDialog(err);        
+        showErrorDialog(err);
       },
       receivable: true,
     );
@@ -267,16 +252,15 @@ class _ReceivablePageState extends State<ReceivablePage> {
       _dataList.clear();
     });
     DataManager.loadAccountingData(
-      token: _userInfo.token,
+      token: _userInfoModel.getToken(),
       year: _selectedYear, 
       month: _selectedMonth,
       onFinished: (dataList) {
-        if (mounted) {
-          setState(() {
-            _loadingDataList = false;
-            _dataList = dataList;
-          });
-        }
+        if (!mounted) return;
+        setState(() {
+          _loadingDataList = false;
+          _dataList = dataList;
+        });
       },
       onError: (err) {
         showErrorDialog(err);        
@@ -286,7 +270,8 @@ class _ReceivablePageState extends State<ReceivablePage> {
   }
 
   void searchAccountingData() {
-    if (_searchBarTextEditingController.text == "") {
+    if (_loadingDataList) return;
+    if (_searchBarTextEditingController.text.isEmpty) {
       showOkDialog(
         context: context, 
         themeModel: _themeModel,
@@ -294,27 +279,24 @@ class _ReceivablePageState extends State<ReceivablePage> {
         message: "검색어를 입력하세요"                              
       );
       return;
-    }    
-
+    }
     setState(() {
       _selectedYear = -1;
       _selectedMonth = -1;
       _loadingDataList = true;
       _dataList.clear();
     });
-
     DataManager.searchAccountingData(
-      token: _userInfo.token,
+      token: _userInfoModel.getToken(),
       begin: _beginDate, 
       end: _endDate, 
       clientName: _searchBarTextEditingController.text, 
-      onFinished: (dataList) {
-        if (mounted) {
-          setState(() {
-            _loadingDataList = false;
-            _dataList = dataList;
-          });
-        }
+      onFinished: (dataList) {        
+        if (!mounted) return;
+        setState(() {
+          _loadingDataList = false;
+          _dataList = dataList;
+        });
       },
       onError: (err) {
         showErrorDialog(err);        
@@ -336,7 +318,7 @@ class _ReceivablePageState extends State<ReceivablePage> {
     }
     final dataCell = row.getCells().firstWhere((element) => element.columnName == "data");
     final selectedData = dataCell.value as AccountingData;
-    if (selectedData.dataType == false && _userInfo.priv == EPrivileges.eManager ) {
+    if (selectedData.dataType == false && _userInfoModel.getPrivileges() == EPrivileges.eManager ) {
       showOkDialog(
         context: context, 
         themeModel: _themeModel,
@@ -352,15 +334,12 @@ class _ReceivablePageState extends State<ReceivablePage> {
         child: AccountingDataConfirmDialog(
           onDateChagned: (date) {
             final dataCell = row.getCells().firstWhere((element) => element.columnName == "data");
-            final selectedData = dataCell.value as AccountingData;              
-
+            final selectedData = dataCell.value as AccountingData;
             selectedData.depositConfirmed = true;
             selectedData.depositDate = date;
-
             invalidate();
-
             DataManager.editAccountingData(
-              token: _userInfo.token,
+              token: _userInfoModel.getToken(),
               data: selectedData,
               onFinised: () {
                 loadDates();              
@@ -394,5 +373,17 @@ class _ReceivablePageState extends State<ReceivablePage> {
     catch (e) {
       showErrorDialog(e.toString());
     }
+  }
+
+  Widget controlButtonWidget(void Function() onTap, IconData icon, String tooltip) {
+    return WidgetHelper.controlButtonWidget(
+      onTap: onTap,
+      normal: _widgetBackgroundColor, 
+      mouseOver: _widgetBackgroundMouseOverColor,
+      iconNormal: _widgetForegroundColor,
+      iconMouseOver: _widgetForegroundMouseOverColor,
+      icon: icon,
+      tooltip: tooltip,
+    );
   }
 }

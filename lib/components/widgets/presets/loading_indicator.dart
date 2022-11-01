@@ -37,28 +37,25 @@ class _PingPongWidget extends State<PingPongWidget> with SingleTickerProviderSta
 
   late Color _indicatorColor;
 
+  bool _firstCall = true;
+
   @override
   void initState() {
     super.initState();
-
     _index = widget.offset;
     _icon = widget.icons[_index];
-
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1100)
     );
-
     _elevCurveAnimation = CurvedAnimation(
       parent: _controller,
       curve: Curves.slowMiddle
     );
-
     _sizeCurveAnimation = CurvedAnimation(
       parent: _controller, 
       curve: Curves.easeInOutExpo
     );
-
     _elevAnimation = TweenSequence(
       <TweenSequenceItem<double>>[
         TweenSequenceItem<double>(
@@ -71,7 +68,6 @@ class _PingPongWidget extends State<PingPongWidget> with SingleTickerProviderSta
         ),
       ]
     ).animate(_elevCurveAnimation);
-
     _sizeAnimation = TweenSequence(
       <TweenSequenceItem<double>>[
         TweenSequenceItem<double>(
@@ -84,9 +80,7 @@ class _PingPongWidget extends State<PingPongWidget> with SingleTickerProviderSta
         ),
       ]
     ).animate(_sizeCurveAnimation);
-
-    _controller.addListener(callback);
-    
+    _controller.addListener(callback);    
     Future.delayed(
       widget.duration,
       () {
@@ -100,13 +94,18 @@ class _PingPongWidget extends State<PingPongWidget> with SingleTickerProviderSta
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
 
-    loadColors();
   }
 
   @override
   void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
     _controller.removeListener(callback);
     _controller.dispose();
     super.dispose();
@@ -133,9 +132,8 @@ class _PingPongWidget extends State<PingPongWidget> with SingleTickerProviderSta
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     var themeType = _themeModel.getThemeType();
-
     _indicatorColor = ColorManager.getLoadingIndicatorColor(themeType);
   }
 
@@ -148,11 +146,9 @@ class _PingPongWidget extends State<PingPongWidget> with SingleTickerProviderSta
           _icon = widget.icons[_index];
         });
       }
-
       if (_changed && _sizeAnimation.value <= 0.1) {
         _changed = false;
       }
-
       _size = 16.0 + _sizeAnimation.value * 16;
   }
 }

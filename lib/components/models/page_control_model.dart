@@ -22,6 +22,10 @@ class PageControlModel with ChangeNotifier {
     notifyListeners();
   }
 
+  void reset() {
+    _index = 0;
+  }
+
   int getCurrentPageIndex() {
     return _index;
   }

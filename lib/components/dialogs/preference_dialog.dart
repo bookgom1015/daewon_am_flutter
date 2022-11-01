@@ -42,15 +42,15 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
 
   final double _titleBarHeight = 50;
 
+  bool _firstCall = true;
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
-
     _pageList = [
       const ThemeSettingPage(),
     ];
-
     _titleList = [
       "테마",
     ];
@@ -59,23 +59,21 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-    _userInfoModel = context.watch<UserInfoModel>();
-
-    if (_userInfoModel.getLoggedIn() && !_titleList.contains("계정")) {
-      _pageList.add(const MyPage());
-      _titleList.add("계정");
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _userInfoModel = context.watch<UserInfoModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      _userInfoModel.addListener(onUserInfoModelChanged);
+      onThemeModelChanged();
+      onUserInfoModelChanged();
     }
-    else if (!_userInfoModel.getLoggedIn() && _titleList.contains("계정")) {
-      _pageList.remove(const MyPage());
-      _titleList.remove("계정");
-    }
-
-    loadColors();
   }
 
   @override
   void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    _userInfoModel.removeListener(onUserInfoModelChanged);
     _pageController.dispose();
     super.dispose();
   }
@@ -108,19 +106,28 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
     );    
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     var themeType = _themeModel.getThemeType();
-
     _backgroundColor = ColorManager.getBackgroundColor(themeType);
     _foregroundColor = ColorManager.getForegroundColor(themeType);
     _identityColor = ColorManager.getIdentityColor(themeType);
     _preferenceBackgroundColor = ColorManager.getPreferenceBackgroundColor(themeType);
     _underlineBackgroundColor = ColorManager.getPreferenceUnderlineBakcgroundColor(themeType);
-
     _normal = ColorManager.getBackgroundColor(themeType);
     _mouseOver = ColorManager.getTitleBarCloseButtonMouseOverBackgroundColor(themeType);
     _iconNormal = ColorManager.getTitleBarButtonIconColor(themeType);
     _iconMouseOver = ColorManager.getTitleBarButtonIconMouseOverColor(themeType);
+  }
+
+  void onUserInfoModelChanged() {
+    if (_userInfoModel.getLoggedIn() && !_titleList.contains("계정")) {
+      _pageList.add(MyPage(parentContext: context));
+      _titleList.add("계정");
+    }
+    else if (!_userInfoModel.getLoggedIn() && _titleList.contains("계정")) {
+      _pageList.remove(MyPage(parentContext: context));
+      _titleList.remove("계정");
+    }
   }
 
   Widget titleBarWidget() {    

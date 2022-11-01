@@ -34,13 +34,23 @@ class _SimpleDatePickerState extends State<SimpleDatePicker> {
   late ColorScheme _colorScheme;
 
   bool _hovering = false;
+  bool _firstCall = true;
 
   @override  
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
@@ -107,16 +117,13 @@ class _SimpleDatePickerState extends State<SimpleDatePicker> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
-
     _foregroundColor = ColorManager.getForegroundColor(themeType);
     _iconForegroundColor = ColorManager.getWidgetIconForegroundColor(themeType);
     _iconForegroundMouseOverColor = ColorManager.getWidgetIconForegroundMouseOverColor(themeType);
     _dialogBackgroundColor = ColorManager.getDatePickerDialogBackgroundColor(themeType);
-
     _colorScheme = ColorManager.getDatePickerColorScheme(themeType);
-
     _iconColor = _hovering ? _iconForegroundMouseOverColor : _iconForegroundColor;
   }
 }

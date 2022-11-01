@@ -1,5 +1,6 @@
 import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
+import 'package:daewon_am/components/helpers/setting_manager.dart';
 import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/enums/theme_types.dart';
@@ -23,6 +24,9 @@ class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerPr
   late Animation<double> _curveAnimation;
   late Animation<double> _animation;
 
+  bool _firstCall = true;
+  bool _pressed = false;
+
   @override
   void initState() {
     super.initState();
@@ -30,30 +34,31 @@ class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerPr
       vsync: this,
       duration: const Duration(milliseconds: 400)
     );
-
     _curveAnimation = CurvedAnimation(
       parent: _controller,
       curve: Curves.ease
     );
-
     _animation = Tween<double>(
       begin: 0, 
       end: 1
     ).animate(_curveAnimation);
-
     _controller.forward();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-
-    loadColors();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
   }
 
   @override
   void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
     _controller.dispose();
     super.dispose();
   }
@@ -112,11 +117,22 @@ class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerPr
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     var themeType = _themeModel.getThemeType();
-
     _backgroundColor = ColorManager.getPreferenceBackgroundColor(themeType);
     _backgroundTransparentColor = ColorManager.getPreferenceBackgroundTransparentColor(themeType);
+  }
+
+  void onPressed(EThemeTypes themeType) {
+    if (_pressed || _themeModel.getThemeType() == themeType) return;
+    _pressed = true;
+    final finished = SettingManager.setThemeSetting(themeType);
+    _themeModel.changeTheme(themeType);
+    _controller.reset();
+    _controller.forward();
+    finished.then((value) {
+      _pressed = false;
+    });
   }
 
   Widget themeBoxWidget(EThemeTypes themeType, Color backgroundColor, Color identityColor, Color layerColor, Color widgetColor) {
@@ -124,11 +140,7 @@ class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerPr
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () {
-          _themeModel.changeTheme(themeType);
-          _controller.reset();
-          _controller.forward();
-        },
+        onTap: () => onPressed(themeType),
         child: Stack(
           children: [
             AnimatedBuilder(

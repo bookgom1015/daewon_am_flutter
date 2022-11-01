@@ -54,24 +54,28 @@ class _LoginPageState extends State<LoginPage> {
   bool _autoLoginChecked = false;
   bool _settingLoaded = false;
 
-  late File _settingFile;
+  bool _firstCall = false;
+
   late dynamic _settingJson;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-    _userInfoModel = context.watch<UserInfoModel>();
-
-    loadColors();
-
-    if (!_settingLoaded) {
+    if (!_firstCall) {
+      _firstCall = true;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _userInfoModel = context.watch<UserInfoModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
       loadSettingFile();
-    }
+    }    
   }
 
   @override
   void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    _idController.dispose();
+    _pwdController.dispose();
     _idFocusNode.dispose();
     _pwdFocusNode.dispose();
     super.dispose();
@@ -145,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }  
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
     _foregroundColor = ColorManager.getForegroundColor(themeType);
     _layerColor = ColorManager.getLayerBackgroundColor(themeType);
@@ -160,39 +164,37 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void loadSettingFile() async {
-    _settingFile = await SettingManager.getSettingFile();
-    final bytes = await _settingFile.readAsBytes();
-    final decoded = utf8.decode(bytes);
-    _settingJson = jsonDecode(decoded);
-    final userId = _settingJson[SettingManager.userIdKey];
-    final userPwd = _settingJson[SettingManager.userPwdKey];
-    if (userId != null && userPwd != null) {
-      _loggingIn = _settingLoaded = true;
-      _autoLoginChecked = true;
-      _idController.text = userId.toString();
-      _pwdController.text = userPwd.toString();
-      login();
-    }
-    else {
-      if (mounted) {
+    final jsonFuture = SettingManager.getUserInfoJson();
+    jsonFuture.then((json) {
+      _settingJson = json;
+      String? userId = _settingJson[SettingManager.userIdKey];
+      String? userPwd = _settingJson[SettingManager.userPwdKey];
+      if (userId != null && userPwd != null) {
+        _loggingIn = _settingLoaded = _autoLoginChecked = true;
+        _idController.text = userId;
+        _pwdController.text = userPwd;
+        login();
+      }
+      else {
+        if (!mounted) return;
         setState(() {
           _settingLoaded = true;
-        });    
+        });
       }
-    }
+    });
   }
 
   bool validate() {
     bool isValid = true;
     setState(() {
-      if (_idController.text == "") {
-      isValid = false;
-      _idIsValid = false;
+      if (_idController.text.isEmpty) {
+        isValid = false;
+        _idIsValid = false;
       }
       else {
         _idIsValid = true;
       }
-      if (_pwdController.text == "") {
+      if (_pwdController.text.isEmpty) {
         isValid = false;
         _pwdIsValid = false;
       }
@@ -203,9 +205,10 @@ class _LoginPageState extends State<LoginPage> {
     return isValid;
   }
 
-  void login() {    
+  void login() {
     if (!validate()) {
-      setState(() {
+      if (!mounted) return;
+      setState(() { 
         _loggingIn = false;
       });
       return;
@@ -214,30 +217,30 @@ class _LoginPageState extends State<LoginPage> {
     userInfoFuture.then((userInfo) {
       _userInfoModel.login(userInfo);
       if (_autoLoginChecked) {
-        _settingJson[SettingManager.userIdKey] = _idController.text.toString();
-        _settingJson[SettingManager.userPwdKey] = _pwdController.text.toString();        
+        _settingJson[SettingManager.userIdKey] = _idController.text;
+        _settingJson[SettingManager.userPwdKey] = _pwdController.text;
       }
       else {
         _settingJson[SettingManager.userIdKey] = null;
         _settingJson[SettingManager.userPwdKey] = null;
       };
-      final bytes = utf8.encode(jsonEncode(_settingJson));
-      final finished = _settingFile.writeAsBytes(bytes);
+      final finished = SettingManager.setUserInfoJson(_settingJson);
       finished.then((value) {
         Navigator.pushReplacementNamed(context, workspacePageRoute);
       });
     })
     .catchError((e) {
+      if (!mounted) return;
+      _pwdController.clear();
+      setState(() {
+        _loggingIn = false;
+      });
       showOkDialog(
         context: context, 
         themeModel: _themeModel,
         title: "오류",
         message: e.toString()
       );
-      setState(() {
-        _loggingIn = false;
-      });
-      _pwdController.clear();
     });
   }
 
@@ -323,10 +326,11 @@ class _LoginPageState extends State<LoginPage> {
       alignment: Alignment.centerRight,
       child: MouseReactionButton(
         onTap: () {
-          if (!_loggingIn) {
+          if (_loggingIn) return;
+          setState(() {
             _loggingIn = true;
-            login();
-          }
+          });
+          login();
         },
         width: 100,
         height: 40,

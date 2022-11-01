@@ -38,14 +38,25 @@ class _AdminPageState extends State<AdminPage> {
 
   final _dataGridController = DataGridController();
 
+  bool _firstCall = true;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-    _userInfoModel = context.watch<UserInfoModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _userInfoModel = context.watch<UserInfoModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+      loadUsers();
+    }
+  }
 
-    loadColors();
-    if (_userInfoModel.getLoggedIn()) loadUsers();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
@@ -151,7 +162,17 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  void loadColors() {
+  void showErrorDialog(String err) {
+    if (!mounted) return;
+    showOkDialog(
+      context: context, 
+      themeModel: _themeModel,
+      title: "오류",
+      message: err
+    );
+  }
+
+  void onThemeModelChanged() {
     var themeType = _themeModel.getThemeType();
     _layerBackgroundColor = ColorManager.getLayerBackgroundColor(themeType);
     _widgetBackgroundColor = ColorManager.getWidgetBackgroundColor(themeType);
@@ -172,11 +193,10 @@ class _AdminPageState extends State<AdminPage> {
     final userListFuture = HttpHelper.getUsers(_userInfoModel.getToken());
     userListFuture.then((userList) {
       _userList = userList; 
-      if (mounted) {
-        setState(() {
-          _loaded = true;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _loaded = true;
+      });
     });
   }
 
@@ -191,12 +211,7 @@ class _AdminPageState extends State<AdminPage> {
           loadUsers();
         })
         .catchError((e) {
-          showOkDialog(
-            context: context, 
-            themeModel: _themeModel,
-            title: "오류",
-            message: e.toString()
-          );
+          showErrorDialog(e.toString());
         });
       }
     );
@@ -225,15 +240,10 @@ class _AdminPageState extends State<AdminPage> {
           loadUsers();
         })
         .catchError((e) {
-          showOkDialog(
-            context: context, 
-            themeModel: _themeModel,
-            title: "오류",
-            message: e.toString()
-          );
+          showErrorDialog(e.toString());
         });
       },
-      title: "경고",
+      title: "알림",
       message: "정말로 삭제하시겠습니까"      
     );
   }

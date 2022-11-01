@@ -35,12 +35,23 @@ class _DateNavColumnState extends State<DateNavColumn> {
   final double _dateNavHeight = 40;
   final double _dateNavVerticalMargin = 10;  
 
+  bool _firstCall = true;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
@@ -72,9 +83,8 @@ class _DateNavColumnState extends State<DateNavColumn> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
-
     _backgroundColor = ColorManager.getBackgroundColor(themeType);
     _backgroundTransparentColor = ColorManager.getBackgroundTransparentColor(themeType);
   }

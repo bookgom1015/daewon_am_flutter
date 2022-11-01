@@ -26,7 +26,7 @@ class UserInfoModel with ChangeNotifier {
     _userInfo.token = "";
     _userInfo.priv = EPrivileges.eNone;
     _loggedIn = false;
-    notifyListeners();    
+    notifyListeners();
   }
 
   String getUserId() {
