@@ -1,9 +1,9 @@
-import 'package:daewon_am/components/entries/data_column.dart';
+import 'package:daewon_am/components/entries/data_grid_column.dart';
 import 'package:daewon_am/components/entries/user.dart';
 import 'package:daewon_am/components/enums/privileges.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
+import 'package:daewon_am/components/widgets/effects/fade_in_out.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
@@ -11,6 +11,8 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:collection/collection.dart';
 
 class UserDataGrid extends StatefulWidget {
+  static const double userIdMinWidth = 150.0;
+  static const double privMinWidth = 150.0;
   final List<User> userList;
   final DataGridController controller;
 
@@ -33,9 +35,6 @@ class _UserDataGridState extends State<UserDataGrid> {
   late Color _dataGridRowHoverColor;
   late Color _dataGridSelectionColor;
 
-  final double _userIdMinWidth = 150;
-  final double _privMinWidth = 150;
-
   late List<DataGridColumn> _dataColumnList; 
 
   String _sortedColumn = "date";
@@ -48,8 +47,8 @@ class _UserDataGridState extends State<UserDataGrid> {
     super.initState();
     _dataColumnList = [
       DataGridColumn("user", "", 0, false),
-      DataGridColumn("userId", "아이디", _userIdMinWidth, true),
-      DataGridColumn("priv", "권한", _privMinWidth, true),
+      DataGridColumn("userId", "아이디", UserDataGrid.userIdMinWidth, true),
+      DataGridColumn("priv", "권한", UserDataGrid.privMinWidth, true),
       DataGridColumn("blank", "비고", double.nan, false),
     ];
   }
@@ -138,19 +137,27 @@ class _UserDataGridState extends State<UserDataGrid> {
               }
             },
             columns: _dataColumnList.map((e) {
-              return WidgetHelper.gridColumnWidget(
-                columnName: e.columnName, 
-                label: e.label, 
-                color: _foregroundColor,
+              return GridColumn(
+                allowSorting: e.allowSorting,
                 width: e.width,
-                allowSorting: e.allowSorting
-              );
+                columnName: e.columnName, 
+                label: Container(
+                  alignment: Alignment.center,
+                  child: Text(
+                    e.label,
+                    style: TextStyle(
+                      color: _foregroundColor,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+              );             
             }).toList(),
           ),
         ),
         Align(
           alignment: Alignment.topCenter,
-          child: WidgetHelper.fadeOutWidget(
+          child: FadeInOut(
             length: 10,
             fromColor: _layerBackgroundColor,
             toColor: _layerBackgroundTransparentColor
@@ -173,10 +180,10 @@ class _UserDataGridState extends State<UserDataGrid> {
   bool reduceColumnWidth(String columnName, double width) {
     switch (columnName) {
       case "userId":
-      if (width <= _userIdMinWidth) return false;
+      if (width <= UserDataGrid.userIdMinWidth) return false;
       break;
       case "priv": 
-      if (width <= _privMinWidth) return false;
+      if (width <= UserDataGrid.privMinWidth) return false;
       break;
       default:
       return true;

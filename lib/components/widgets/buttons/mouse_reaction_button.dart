@@ -29,13 +29,10 @@ class MouseReactionButton extends StatefulWidget {
 }
 
 class _MouseReactionButtonState extends State<MouseReactionButton> {
-  late Color? _color;
-
   bool _hovering = false;
 
   @override
   Widget build(BuildContext context) {
-    _color = _hovering ? widget.mouseOver : widget.normal;
     return Container(
       width: widget.width,
       height: widget.height,
@@ -46,13 +43,11 @@ class _MouseReactionButtonState extends State<MouseReactionButton> {
       child: MouseRegion(
         onEnter: (event) {
           setState(() {
-            _color = widget.mouseOver;
             _hovering = true;
           });
         },
         onExit: (event) {
           setState(() {
-            _color = widget.normal;
             _hovering = false;
           });
         },
@@ -62,7 +57,7 @@ class _MouseReactionButtonState extends State<MouseReactionButton> {
           child: AnimatedContainer(
             duration: widget.duration,
             curve: widget.curve,
-            color: _color,
+            color: _hovering ? widget.mouseOver : widget.normal,
             child: widget.child,
           ),
         ),

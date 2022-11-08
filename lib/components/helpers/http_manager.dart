@@ -10,13 +10,13 @@ import 'package:http/http.dart' as http;
 
 const String webApiUri = kDebugMode ? "https://localhost:5001/api/" : "https://www.stdaewon.com/api/";
 
-Uri loginUri = Uri.parse("${webApiUri}account/login");
-Uri dataUri = Uri.parse("${webApiUri}account");
-Uri dataListUri = Uri.parse("${webApiUri}account/list");
-Uri versionUri = Uri.parse("${webApiUri}version");
-Uri userUri = Uri.parse("${webApiUri}account/user");
+final Uri loginUri = Uri.parse("${webApiUri}account/login");
+final Uri dataUri = Uri.parse("${webApiUri}account");
+final Uri dataListUri = Uri.parse("${webApiUri}account/list");
+final Uri versionUri = Uri.parse("${webApiUri}version");
+final Uri userUri = Uri.parse("${webApiUri}account/user");
 
-class HttpHelper {
+class HttpManager {
   static Future<UserInfo> login(String userId, String userPwd) async {
     final response = await http.post(
       loginUri,

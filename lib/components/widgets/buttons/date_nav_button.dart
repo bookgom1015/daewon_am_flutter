@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class DateNavButton extends StatefulWidget {
+  static const double dateNavHeight = 40.0;
+  static const double dateNavVerticalMargin = 10.0;
   final int year;
   final int month;
   final int selectedYear;
@@ -31,11 +33,7 @@ class _DateNavButtonState extends State<DateNavButton> {
   late Color _widgetBackgrondColor;
   late Color _widgetBackgrondMouseOverColor;
 
-  late Color _color;
-
-  final double _dateNavHeight = 40;
-  final double _dateNavVerticalMargin = 10;
-
+  bool _hovering = false;
   bool _firstCall = true;
 
   @override
@@ -60,8 +58,8 @@ class _DateNavButtonState extends State<DateNavButton> {
     bool selected = widget.year == widget.selectedYear && widget.month == widget.selectedMonth;
     bool monthly = widget.month != -1;
     return Container(
-      height: _dateNavHeight,
-      margin: EdgeInsets.only(left: monthly ? 25 : 0, bottom: _dateNavVerticalMargin),
+      height: DateNavButton.dateNavHeight,
+      margin: EdgeInsets.only(left: monthly ? 25 : 0, bottom: DateNavButton.dateNavVerticalMargin),
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8)
@@ -69,32 +67,38 @@ class _DateNavButtonState extends State<DateNavButton> {
       child: MouseRegion(
         onEnter: (event) {
           setState(() {
-            _color = _widgetBackgrondMouseOverColor;
+            _hovering = true;
           });
         },
         onExit: (event) {
           setState(() {
-            _color = _widgetBackgrondColor;
+            _hovering = false;
           });        
         },
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
           onTap: () {
-            if (selected) return;
-            widget.onTap(widget.year, widget.month);
+            if (selected) {
+              widget.onTap(-1, -1);
+            }
+            else {
+              widget.onTap(widget.year, widget.month);
+            }
           },
           child: AnimatedContainer(
             duration: colorChangeDuration,
             curve: colorChangeCurve,
             padding: const EdgeInsets.only(left: 20),
-            color: selected ? _widgetBackgrondMouseOverColor : _color,
+            color: (selected || _hovering) ? _widgetBackgrondMouseOverColor : _widgetBackgrondColor,
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 widget.year == -1 ? "연간차트" : 
                   (widget.month == -1 ? "${widget.year}년" : "${widget.year}년 ${widget.month}월"),
+                maxLines: 1,
                 style: TextStyle(
-                  color: _foregroundColor
+                  color: _foregroundColor,
+                  overflow: TextOverflow.clip,
                 ),
               ),
             ),
@@ -109,6 +113,5 @@ class _DateNavButtonState extends State<DateNavButton> {
     _foregroundColor = ColorManager.getForegroundColor(themeType);
     _widgetBackgrondColor = ColorManager.getWidgetBackgroundColor(themeType);
     _widgetBackgrondMouseOverColor = ColorManager.getWidgetBackgroundMouseOverColor(themeType);
-    _color = _widgetBackgrondColor;
   }
 }

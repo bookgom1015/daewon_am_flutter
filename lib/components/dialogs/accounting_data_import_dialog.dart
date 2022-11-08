@@ -1,11 +1,11 @@
 import 'package:daewon_am/components/dialogs/accounting_data_edit_dialog.dart';
-import 'package:daewon_am/components/dialogs/ok_cancel_dialog.dart';
 import 'package:daewon_am/components/dialogs/ok_dialog.dart';
 import 'package:daewon_am/components/entries/accounting_data.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
-import 'package:daewon_am/components/widgets/presets/accounting_data_grid.dart';
+import 'package:daewon_am/components/widgets/buttons/dialog_button.dart';
+import 'package:daewon_am/components/widgets/data_grids/accounting_data_grid.dart';
+import 'package:daewon_am/components/widgets/buttons/control_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -35,14 +35,26 @@ class _AccountingDataImportDialogState extends State<AccountingDataImportDialog>
   late Color _mouseOver;
   late Color _foregroundColor;
 
-  final _controller = DataGridController(); 
+  final _controller = DataGridController();
+
+  bool _firstCall = true;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -73,7 +85,7 @@ class _AccountingDataImportDialogState extends State<AccountingDataImportDialog>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      WidgetHelper.controlButtonWidget(
+                      ControlButton(
                         onTap: editAccountingData, 
                         normal: _widgetBackgroundColor, 
                         mouseOver: _widgetBackgroundMouseOverColor,
@@ -82,7 +94,7 @@ class _AccountingDataImportDialogState extends State<AccountingDataImportDialog>
                         icon: Icons.edit,
                         tooltip: "수정",
                       ),
-                      WidgetHelper.controlButtonWidget(
+                      ControlButton(
                         onTap: removeAccountingData, 
                         normal: _widgetBackgroundColor, 
                         mouseOver: _widgetBackgroundMouseOverColor,
@@ -109,7 +121,7 @@ class _AccountingDataImportDialogState extends State<AccountingDataImportDialog>
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  WidgetHelper.dialogButton(
+                  DialogButton(
                     onPressed: () {
                       widget.onPressed();
                       Navigator.of(context).pop();
@@ -120,7 +132,7 @@ class _AccountingDataImportDialogState extends State<AccountingDataImportDialog>
                     fontColor: _foregroundColor,
                   ),                  
                   const  SizedBox(width: 5),
-                  WidgetHelper.dialogButton(
+                  DialogButton(
                     onPressed: () { Navigator.of(context).pop(); },
                     label: "취소",
                     normal: _normal,
@@ -136,9 +148,8 @@ class _AccountingDataImportDialogState extends State<AccountingDataImportDialog>
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     var themeType = _themeModel.getThemeType();
-
     _layerBackgroundColor = ColorManager.getLayerBackgroundColor(themeType);
     _widgetBackgroundColor = ColorManager.getWidgetBackgroundColor(themeType);
     _widgetBackgroundMouseOverColor = ColorManager.getWidgetBackgroundMouseOverColor(themeType);
@@ -160,10 +171,8 @@ class _AccountingDataImportDialogState extends State<AccountingDataImportDialog>
       );
       return;
     }
-
     final dataCell = row.getCells().firstWhere((element) => element.columnName == "data");
     final selectedData = dataCell.value as AccountingData;
-
     showDialog(
       context: context, 
       barrierDismissible: false,

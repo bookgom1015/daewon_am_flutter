@@ -50,10 +50,7 @@ class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
   late Color _tooltipBackgroundColor;
   late Color _tooltipForegroundColor;
 
-  late Color? _color;
-  late Color? _iconColor;
   bool _hovering = false;
-
   bool _firstCall = true;
 
   @override
@@ -62,12 +59,14 @@ class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
     if (_firstCall) {
       _firstCall = false;
       _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
     }
-    onThemeModelChanged();
   }
 
   @override
   void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
     super.dispose();
   }
 
@@ -85,15 +84,11 @@ class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
       child: MouseRegion(
         onEnter: (event) {
           setState(() {
-            _color = widget.mouseOver;
-            _iconColor = widget.iconMouseOver;
             _hovering = true;
           });
         },
         onExit: (event) {
           setState(() {
-            _color = widget.normal;
-            _iconColor = widget.iconNormal;
             _hovering = false;
           });
         },
@@ -103,7 +98,7 @@ class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
           child: AnimatedContainer(
             duration: colorChangeDuration,
             curve: colorChangeCurve,
-            color: _color,
+            color: _hovering ? widget.mouseOver : widget.normal,
             child: Tooltip(
               message: widget.tooltip,
               waitDuration: tooltipWaitDuration,
@@ -117,7 +112,7 @@ class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
               child: Icon(
                 widget.icon,
                 size: widget.iconSize,
-                color: _iconColor,
+                color: _hovering ? widget.iconMouseOver : widget.iconNormal,
               ),
             ),
           ),
@@ -130,7 +125,5 @@ class _MouseReactionIconButtonState extends State<MouseReactionIconButton> {
     final themeType = _themeModel.getThemeType();
     _tooltipBackgroundColor = ColorManager.getTooltipBackgroundColor(themeType);
     _tooltipForegroundColor = ColorManager.getTooltipForegroundColor(themeType);
-    _color = _hovering ? widget.mouseOver : widget.normal;    
-    _iconColor = _hovering ? widget.iconMouseOver : widget.iconNormal;
   }
 }

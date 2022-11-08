@@ -1,11 +1,10 @@
 
-import 'package:daewon_am/components/widgets/presets/page_nav_buttons.dart';
+import 'package:daewon_am/components/widgets/buttons/page_nav_buttons.dart';
 import 'package:flutter/material.dart';
 
 class PageListItem {
   Widget page;
   PageNavButton navButton;
-
   PageListItem(this.page, this.navButton);
 }
 

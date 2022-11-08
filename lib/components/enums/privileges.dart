@@ -1,5 +1,4 @@
 
-
 enum EPrivileges {
   eNone,
   eAdmin,

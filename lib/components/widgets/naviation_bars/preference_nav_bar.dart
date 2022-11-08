@@ -107,11 +107,11 @@ class _PreferenceNavBarState extends State<PreferenceNavBar> {
   }
 
   void onTap(int index) {
+    _selectedIndex = index;
     widget.controller.animateToPage(
       index, 
       duration: pageTransitionDuration,
       curve: pageTransitionCurve,
     );
-    _selectedIndex = index;
   }
 }

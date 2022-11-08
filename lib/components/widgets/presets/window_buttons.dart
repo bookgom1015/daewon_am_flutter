@@ -14,6 +14,8 @@ class WindowButtons extends StatefulWidget {
 
 class _WindowButtonsState extends State<WindowButtons> {  
   late ThemeSettingModel _themeModel;
+  late WindowButtonColors _titleBarButtonColors;
+  late WindowButtonColors _titleBarCloseButtonColors;
 
   bool _firstCall = true;
 
@@ -23,18 +25,49 @@ class _WindowButtonsState extends State<WindowButtons> {
     if (_firstCall) {
       _firstCall = false;
       _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
     }
   }
 
   @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.topRight,
+      child: Row(
+        children: [
+          MinimizeWindowButton(
+            colors: _titleBarButtonColors
+          ),
+          MaximizeWindowButton(
+            colors: _titleBarButtonColors,
+            onPressed: () {
+              setState(() {
+                appWindow.maximizeOrRestore();
+              });
+            },
+          ),
+          CloseWindowButton(
+            colors: _titleBarCloseButtonColors,
+          )
+        ],
+      ),
+    );
+  }
+
+  void onThemeModelChanged() {
     var themeType = _themeModel.getThemeType();
     var backgroundColor = ColorManager.getBackgroundColor(themeType);
     var titleBarButtonIconColor = ColorManager.getTitleBarButtonIconColor(themeType);
     var titleBarButtonIconMouseOverColor = ColorManager.getTitleBarButtonIconMouseOverColor(themeType);
     var titleBarButtonIconMouseDownColor = ColorManager.getTitleBarButtonMouseDownBackgroundColor(themeType);
-
-    WindowButtonColors titleBarButtonColors =  WindowButtonColors(
+    _titleBarButtonColors =  WindowButtonColors(
       normal: backgroundColor,
       mouseOver: ColorManager.getTitleBarButtonMouseOverBackgroundColor(themeType),
       mouseDown: ColorManager.getTitleBarButtonMouseDownBackgroundColor(themeType),
@@ -42,8 +75,7 @@ class _WindowButtonsState extends State<WindowButtons> {
       iconMouseOver: titleBarButtonIconMouseOverColor,
       iconMouseDown: titleBarButtonIconMouseDownColor
     );
-
-    WindowButtonColors titleBarCloseButtonColors =  WindowButtonColors(
+    _titleBarCloseButtonColors =  WindowButtonColors(
       normal: backgroundColor,
       mouseOver: ColorManager.getTitleBarCloseButtonMouseOverBackgroundColor(themeType),
       mouseDown: ColorManager.getTitleBarCloseButtonMouseDownBackgroundColor(themeType),
@@ -51,29 +83,5 @@ class _WindowButtonsState extends State<WindowButtons> {
       iconMouseOver: titleBarButtonIconMouseOverColor,
       iconMouseDown: titleBarButtonIconMouseDownColor
     );
-
-    return Align(
-      alignment: Alignment.topRight,
-      child: Row(
-        children: [
-          MinimizeWindowButton(
-            colors: titleBarButtonColors
-          ),
-          MaximizeWindowButton(
-            colors: titleBarButtonColors,
-            onPressed: resize,
-          ),
-          CloseWindowButton(
-            colors: titleBarCloseButtonColors,
-          )
-        ],
-      ),
-    );
-  }
-
-  void resize() {
-    setState(() {
-      appWindow.maximizeOrRestore();
-    });
   }
 }

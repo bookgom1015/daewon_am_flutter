@@ -5,18 +5,18 @@ import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class DataGridSummary extends StatefulWidget {
+class AccountingDataGridSummary extends StatefulWidget {
   final List<AccountingData> dataList;
 
-  const DataGridSummary({
+  const AccountingDataGridSummary({
     Key? key,
     required this.dataList}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _DataGridSummaryState();
+  State<StatefulWidget> createState() => _AccountingDataGridSummaryState();
 }
 
-class _DataGridSummaryState extends State<DataGridSummary> {
+class _AccountingDataGridSummaryState extends State<AccountingDataGridSummary> {
   late ThemeSettingModel _themeModel;
 
   late Color _foregroundColor;

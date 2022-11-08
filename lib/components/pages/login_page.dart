@@ -1,17 +1,14 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/dialogs/ok_dialog.dart';
 import 'package:daewon_am/components/globals/global_routes.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
-import 'package:daewon_am/components/helpers/http_helper.dart';
+import 'package:daewon_am/components/helpers/http_manager.dart';
 import 'package:daewon_am/components/helpers/setting_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
 import 'package:daewon_am/components/widgets/buttons/mouse_reaction_button.dart';
 import 'package:daewon_am/components/widgets/buttons/mouse_reaction_icon_button.dart';
+import 'package:daewon_am/components/widgets/check_boxes/responsive_check_box.dart';
 import 'package:daewon_am/components/widgets/presets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -213,7 +210,7 @@ class _LoginPageState extends State<LoginPage> {
       });
       return;
     }
-    final userInfoFuture = HttpHelper.login(_idController.text, _pwdController.text);
+    final userInfoFuture = HttpManager.login(_idController.text, _pwdController.text);
     userInfoFuture.then((userInfo) {
       _userInfoModel.login(userInfo);
       if (_autoLoginChecked) {
@@ -223,7 +220,7 @@ class _LoginPageState extends State<LoginPage> {
       else {
         _settingJson[SettingManager.userIdKey] = null;
         _settingJson[SettingManager.userPwdKey] = null;
-      };
+      }
       final finished = SettingManager.setUserInfoJson(_settingJson);
       finished.then((value) {
         Navigator.pushReplacementNamed(context, workspacePageRoute);
@@ -365,7 +362,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
           const SizedBox(width: 5),
-          WidgetHelper.checkBoxWidget(
+          ResponsiveCheckBox(
             onChanged: (value) {
               if (value == null) return;
               setState(() {

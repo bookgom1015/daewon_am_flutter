@@ -1,6 +1,6 @@
 import 'package:daewon_am/components/helpers/color_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
+import 'package:daewon_am/components/widgets/buttons/dialog_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,12 +27,23 @@ class _OkCancelDialogState extends State<OkCancelDialog> {
   late Color _backgroundColor;
   late Color _foregroundColor;
 
+  bool _firstCall = true;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
@@ -84,7 +95,7 @@ class _OkCancelDialogState extends State<OkCancelDialog> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  WidgetHelper.dialogButton(
+                  DialogButton(
                     onPressed: () {
                       widget.onPressed();
                       Navigator.of(context).pop();
@@ -95,7 +106,7 @@ class _OkCancelDialogState extends State<OkCancelDialog> {
                     fontColor: _foregroundColor,
                   ),
                   const SizedBox(width: 5),
-                  WidgetHelper.dialogButton(
+                  DialogButton(
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
@@ -113,9 +124,8 @@ class _OkCancelDialogState extends State<OkCancelDialog> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
-
     _normal = ColorManager.getWidgetBackgroundColor(themeType);
     _mouseOver = ColorManager.getWidgetBackgroundMouseOverColor(themeType);
     _backgroundColor = ColorManager.getBackgroundColor(themeType);

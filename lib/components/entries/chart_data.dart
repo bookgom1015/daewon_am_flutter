@@ -2,8 +2,7 @@
 class ChartData {
   int date;
   bool dataType;
-  int value;
-  
+  int value;  
   ChartData(this.date, this.dataType, this.value);
 
   ChartData.fromJson(dynamic json) :
@@ -16,6 +15,5 @@ class SfChartData {
   String date;
   int? income;
   int? outcome;
-
   SfChartData(this.date, this.income, this.outcome);
 }

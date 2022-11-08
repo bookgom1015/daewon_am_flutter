@@ -1,8 +1,8 @@
 import 'package:daewon_am/components/entries/user.dart';
 import 'package:daewon_am/components/enums/privileges.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
+import 'package:daewon_am/components/widgets/buttons/dialog_button.dart';
 import 'package:daewon_am/components/widgets/buttons/mouse_reaction_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -43,20 +43,29 @@ class _UserCreateDialogState extends State<UserCreateDialog> {
   String _selectedPriv = EPrivileges.eObserver.text;
 
   bool _visible = false;
+  bool _firstCall = true;
 
   @override
   void initState() {
     super.initState();
-
     _dropdownMenumItems = getPrivTextList();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
@@ -102,7 +111,7 @@ class _UserCreateDialogState extends State<UserCreateDialog> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  WidgetHelper.dialogButton(
+                  DialogButton(
                     onPressed: onAddButtonPressed,
                     label: "추가",
                     normal: _normal,
@@ -110,7 +119,7 @@ class _UserCreateDialogState extends State<UserCreateDialog> {
                     fontColor: _foregroundColor,
                   ),                  
                   const  SizedBox(width: 5),
-                  WidgetHelper.dialogButton(
+                  DialogButton(
                     onPressed: onCancelButtonPressed,
                     label: "취소",
                     normal: _normal,
@@ -126,7 +135,7 @@ class _UserCreateDialogState extends State<UserCreateDialog> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
     _layerBackgroundColor = ColorManager.getLayerBackgroundColor(themeType);
     _widgetBackgroundColor = ColorManager.getWidgetBackgroundColor(themeType);

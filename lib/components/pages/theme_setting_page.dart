@@ -1,9 +1,9 @@
 import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
 import 'package:daewon_am/components/helpers/setting_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/enums/theme_types.dart';
+import 'package:daewon_am/components/widgets/effects/fade_in_out.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -99,7 +99,7 @@ class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerPr
         ),
         Align(
           alignment: Alignment.topCenter,
-          child: WidgetHelper.fadeOutWidget(
+          child: FadeInOut(
             length: 30,
             fromColor: _backgroundColor,
             toColor: _backgroundTransparentColor
@@ -107,7 +107,7 @@ class _ThemeSettingPageState extends State<ThemeSettingPage> with SingleTickerPr
         ),
         Align(
           alignment: Alignment.bottomCenter,
-          child: WidgetHelper.fadeOutWidget(
+          child: FadeInOut(
             length: 30,
             fromColor: _backgroundTransparentColor,
             toColor: _backgroundColor

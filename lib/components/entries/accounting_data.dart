@@ -11,7 +11,6 @@ class AccountingData {
   bool depositConfirmed;
   DateTime? depositDate;
   bool deleted;
-
   AccountingData({
     this.uid,
     required this.clientName, 

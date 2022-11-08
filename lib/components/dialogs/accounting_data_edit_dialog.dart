@@ -1,8 +1,10 @@
 import 'package:daewon_am/components/entries/accounting_data.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
-import 'package:daewon_am/components/widgets/date_pickers/simple_date_picker.dart';
+import 'package:daewon_am/components/widgets/buttons/date_picker_button.dart';
+import 'package:daewon_am/components/widgets/buttons/dialog_button.dart';
+import 'package:daewon_am/components/widgets/check_boxes/responsive_check_box.dart';
+import 'package:daewon_am/components/widgets/effects/fade_in_out.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -27,10 +29,8 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
   late Color _backgroundTransparentColor;
   late Color _foregroundColor;
   late Color _identityColor;
-
   late Color _normal;
   late Color _mouseOver;
-
   late Color _underlineColor;
   late Color _underlineFocusedColor;
   late Color _underlineInvalidColor;
@@ -44,8 +44,12 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
   bool _dataType = false;
   bool _depositConfirmed = false;
 
-  late List<TextInputFormatter> _includesFloatingPointInputFormatter;
-  late List<TextInputFormatter> _onlyDidgitInputFormatter;
+  final List<TextInputFormatter> _includesFloatingPointInputFormatter = [
+    FilteringTextInputFormatter.allow(RegExp(r"^[+-]?((^(0|[1-9]\d*))+([.][0-9]*)?|[.][0-9]+)")),
+  ];
+  final List<TextInputFormatter> _onlyDidgitInputFormatter = [
+    FilteringTextInputFormatter.allow(RegExp(r"^[+-]?([0]|([1-9]+[0-9]*))")),
+  ];
 
   late String title;
   late String buttonLabel;
@@ -62,14 +66,14 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
   bool _isTaxAmountValid = true;
   bool _isUnitPriceValid = true;
 
+  bool _firstCall = true;
+
   @override
   void initState() {
     super.initState();
-
     if (widget.data == null) {      
       title = "데이터 추가";
-      buttonLabel = "추가";    
-
+      buttonLabel = "추가";
       final now = DateTime.now();
       _date = now;
       _depositDate = now;
@@ -77,7 +81,6 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
     else {
       title = "데이터 수정";
       buttonLabel = "수정";
-
       final data = widget.data!;
       _clientNameTextEditingController.text = data.clientName;
       _steelWeightTextEditingController.text  = data.steelWeight.toString();
@@ -94,16 +97,23 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
-    _includesFloatingPointInputFormatter = [
-      FilteringTextInputFormatter.allow(RegExp(r"^[+-]?((^(0|[1-9]\d*))+([.][0-9]*)?|[.][0-9]+)")),
-    ];
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    _onlyDidgitInputFormatter = [
-      FilteringTextInputFormatter.allow(RegExp(r"^[+-]?([1-9]+([0-9]*))")),
-    ];
-
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    _clientNameTextEditingController.dispose();
+    _steelWeightTextEditingController.dispose();
+    _supplyPriceTextEditingController.dispose();
+    _taxAmountTextEditingController.dispose();
+    _unitPriceTextEditingController.dispose();
+    super.dispose();
   }
 
   @override
@@ -163,7 +173,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
                           label: "날짜", 
                           child: Padding(
                             padding: const EdgeInsets.only(left: 5),
-                            child: SimpleDatePicker(
+                            child: DatePickerButton(
                               onChangedDate: (date) {
                                 if (date == null) return;
                                 setState(() {
@@ -273,7 +283,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
                                   },
                                   value: _depositConfirmed,
                                 ),
-                                _depositConfirmed ? SimpleDatePicker(
+                                _depositConfirmed ? DatePickerButton(
                                   onChangedDate: (date) {
                                     if (date == null) return;
                                     setState(() {
@@ -292,7 +302,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
                             padding: const EdgeInsets.only(left: 5),
                             child: Row(
                               children: [
-                                WidgetHelper.checkBoxWidget(
+                                ResponsiveCheckBox(
                                   onChanged: (value) {
                                     if (value == null) return;                                  
                                     setState(() {
@@ -318,7 +328,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
                   ),
                   Align(
                     alignment: Alignment.topCenter,
-                    child: WidgetHelper.fadeOutWidget(
+                    child: FadeInOut(
                       length: 10,
                       fromColor: _backgroundColor,
                       toColor: _backgroundTransparentColor
@@ -326,7 +336,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,
-                    child: WidgetHelper.fadeOutWidget(
+                    child: FadeInOut(
                       length: 10,
                       fromColor: _backgroundTransparentColor,
                       toColor: _backgroundColor
@@ -341,7 +351,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  WidgetHelper.dialogButton(
+                  DialogButton(
                     onPressed: onOkButtonPressed,
                     label: buttonLabel,
                     normal: _normal,
@@ -349,7 +359,7 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
                     fontColor: _foregroundColor,
                   ),                  
                   const  SizedBox(width: 5),
-                  WidgetHelper.dialogButton(
+                  DialogButton(
                     onPressed: onCancelButtonPressed,
                     label: "취소",
                     normal: _normal,
@@ -365,22 +375,18 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
-
     _backgroundColor = ColorManager.getLayerBackgroundColor(themeType);
     _backgroundTransparentColor = ColorManager.getLayerTransparentBackgroundColor(themeType);
     _foregroundColor = ColorManager.getForegroundColor(themeType);
     _identityColor = ColorManager.getIdentityColor(themeType);
-
     _normal = ColorManager.getWidgetBackgroundColor(themeType);
     _mouseOver = ColorManager.getWidgetBackgroundMouseOverColor(themeType);
-
     _underlineColor = ColorManager.getTextFormFieldUnderlineColor(themeType);
     _underlineFocusedColor = ColorManager.getTextFormFieldUnderlineFocusedColor(themeType);
     _underlineInvalidColor = ColorManager.getTextFormFieldUnderlineInvalidColor(themeType);
     _underlineInvalidFocusedColor = ColorManager.getTextFormFieldUnderlineInvalidFocusedColor(themeType);
-
     _textStyle = TextStyle(
       color: _foregroundColor
     );
@@ -411,35 +417,35 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
   bool validate() {
     bool isValid = true;
     setState(() {
-      if (_clientNameTextEditingController.text == "") {
+      if (_clientNameTextEditingController.text.isEmpty) {
         isValid = false;
         _isClientNameValid = false;
       }
       else {
         _isClientNameValid = true;
       }
-      if (_steelWeightTextEditingController.text == "") {
+      if (_steelWeightTextEditingController.text.isEmpty) {
         isValid = false;
         _isSteelWeightValid = false;
       }
       else {
         _isSteelWeightValid = true;
       }
-      if (_supplyPriceTextEditingController.text == "") {
+      if (_supplyPriceTextEditingController.text.isEmpty) {
         isValid = false;
         _isSupplyPriceValid = false;
       }
       else {
         _isSupplyPriceValid = true;
       }
-      if (_taxAmountTextEditingController.text == "") {
+      if (_taxAmountTextEditingController.text.isEmpty) {
         isValid = false;
         _isTaxAmountValid = false;
       }
       else {
         _isTaxAmountValid = true;
       }
-      if (_unitPriceTextEditingController.text == "") {
+      if (_unitPriceTextEditingController.text.isEmpty) {
         isValid = false;
         _isUnitPriceValid = false;
       }
@@ -488,4 +494,23 @@ class _AccountingDataEditDialogState extends State<AccountingDataEditDialog> {
       splashRadius: 0,
     );
   }
+}
+
+void showEditingDialog({
+  required BuildContext context,
+  required ThemeSettingModel themeModel, 
+  required AccountingData data,
+  required void Function(AccountingData data) onPressed,
+}) {
+  showDialog(
+    context: context, 
+    barrierDismissible: false,
+    builder: (_) => ChangeNotifierProvider.value(
+        value: themeModel,
+        child: AccountingDataEditDialog(
+          data: data,
+          onPressed: onPressed,
+        ),
+      )
+  );
 }

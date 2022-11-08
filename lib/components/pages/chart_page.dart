@@ -4,11 +4,13 @@ import 'dart:ui';
 import 'package:daewon_am/components/dialogs/ok_dialog.dart';
 import 'package:daewon_am/components/entries/chart_data.dart';
 import 'package:daewon_am/components/enums/privileges.dart';
+import 'package:daewon_am/components/globals/global_theme_settings.dart';
 import 'package:daewon_am/components/helpers/data_manager.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
+import 'package:daewon_am/components/widgets/buttons/mouse_reaction_icon_button.dart';
+import 'package:daewon_am/components/widgets/buttons/control_button.dart';
 import 'package:daewon_am/components/widgets/presets/date_nav_column.dart';
 import 'package:daewon_am/components/widgets/presets/loading_indicator.dart';
 import 'package:file_picker/file_picker.dart';
@@ -31,11 +33,12 @@ class SimpleData {
   int value;
 }
 
-class _ChartPageState extends State<ChartPage> {
+class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMixin {
   late ThemeSettingModel _themeModel;
   late UserInfoModel _userInfoModel;
 
   late Color _layerBackgrondColor;
+  late Color _backgroundColor;
   late Color _foregroundColor;
   late Color _chartLabelColor;
   late Color _chartXAxisColor;
@@ -64,6 +67,38 @@ class _ChartPageState extends State<ChartPage> {
   final GlobalKey<SfCartesianChartState> _chartKey = GlobalKey();
 
   bool _firstCall = true;
+
+  late AnimationController _controller;
+  late Animation<double> _curveAnimation;
+  late Animation<double> _animation;
+
+  bool _forward = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300)
+    );
+    _curveAnimation = CurvedAnimation(
+      parent: _controller, 
+      curve: Curves.easeOutQuart
+    );
+    _animation = Tween<double>(
+      // 
+      begin: 0.0,
+      end: 200.0
+    ).animate(_curveAnimation);
+    _controller.addStatusListener((status) { 
+      if (status.name == "completed") {
+        _forward = false;
+      }
+      else if (status.name == "dismissed") {
+        _forward = true;
+      }
+    });
+  }
 
   @override  
   void didChangeDependencies() {
@@ -114,133 +149,72 @@ class _ChartPageState extends State<ChartPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 200,
-          padding: const EdgeInsets.fromLTRB(10, 10, 5, 10),
-          decoration: const BoxDecoration(
-            color: Colors.transparent
-          ),
-          child: _dateNavsLoaded ? DateNavColumn(
-            dateMap: _dateMap, 
-            selectedYear: _selectedYear, 
-            selectedMonth: _selectedMonth,
-            onTap: (year, month) => loadChartData(year, month),
-            yearly: true,
-          ) : const LoadingIndicator(),   
-        ),
-        Expanded(
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(5, 10, 10, 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8)
-            ),
-            clipBehavior: Clip.hardEdge,
-            child: Stack(
-              children: [
-                SfCartesianChart(
-                  key: _chartKey,
-                  backgroundColor: _layerBackgrondColor,
-                  plotAreaBorderWidth: 0,
-                  primaryXAxis: CategoryAxis(
-                    labelStyle: _chartLabelTextStyle,
-                    axisLine: AxisLine(
-                      color: _chartYAxisColor
-                    ),
-                    majorGridLines: MajorGridLines(
-                      width: 1,
-                      color: _chartXAxisColor
-                    ),
-                    majorTickLines: MajorTickLines(
-                      color: _chartXAxisColor
-                    )
-                  ),
-                  primaryYAxis: NumericAxis(
-                    numberFormat: NumberFormat.simpleCurrency(locale: "ko_KR"),
-                    labelStyle: _chartLabelTextStyle,
-                    axisLine: const AxisLine(
-                      color: Colors.transparent
-                    ),
-                    majorGridLines: MajorGridLines(
-                      width: 1,
-                      color: _chartYAxisColor
-                    ),
-                    majorTickLines: MajorTickLines(
-                      color: _chartYAxisColor
-                    )
-                  ),
-                  title: ChartTitle(
-                    text: _title,
-                    textStyle: TextStyle(
-                      color: _foregroundColor
-                    )
-                  ),
-                  legend: Legend(
-                    isVisible: true,
-                    position: LegendPosition.top,
-                    textStyle: TextStyle(
-                      color: _foregroundColor
-                    )
-                  ),
-                  tooltipBehavior: TooltipBehavior(
-                    enable: true,
-                    tooltipPosition: TooltipPosition.pointer
-                  ),
-                  series: <ChartSeries<SfChartData, String>> [
-                    ColumnSeries(
-                      dataSource: _chartDataList, 
-                      xValueMapper: (SfChartData data, _) => data.date, 
-                      yValueMapper: (SfChartData data, _) => data.income, 
-                      name: "매출",
-                      dataLabelSettings: DataLabelSettings(
-                        isVisible:  true,
-                        textStyle: _foregrundTextStyle
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 1200) {
+          return AnimatedBuilder(
+            animation: _controller, 
+            builder: (context, _) {
+              return Stack(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        width: _animation.value,
+                        clipBehavior: Clip.hardEdge,
+                        decoration: const BoxDecoration(),
+                        child: datePanelWidget(),
                       ),
-                      width: 1,
-                      spacing: 0.5,
-                      borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), topRight:  Radius.circular(8)),                      
-                      color: _chartOutcomeColor,
-                    ),
-                    ColumnSeries(
-                      dataSource: _chartDataList, 
-                      xValueMapper: (SfChartData data, _) => data.date, 
-                      yValueMapper: (SfChartData data, _) => data.outcome, 
-                      name: "매입",
-                      dataLabelSettings: DataLabelSettings(
-                        isVisible:  true,
-                        textStyle: _foregrundTextStyle
+                      chartPanelWidget(),
+                    ],
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Transform.translate(
+                      offset: Offset(_animation.value, 0),
+                      child: Opacity(
+                        opacity: 0.8,
+                        child: MouseReactionIconButton(
+                          onTap: () {
+                            if (_forward) {
+                              _controller.forward();
+                            }
+                            else {
+                              _controller.reverse();
+                            }
+                          },
+                          width: 45,
+                          height: 45,
+                          shape: BoxShape.circle,
+                          margin: const EdgeInsets.only(left: 15),
+                          duration: colorChangeDuration,
+                          curve: colorChangeCurve,
+                          normal: _widgetBackgroundColor,
+                          mouseOver: _widgetBackgroundMouseOverColor,
+                          iconNormal: _widgetForegroundColor,
+                          iconMouseOver: _widgetForegroundMouseOverColor,
+                          icon: _forward ? Icons.keyboard_arrow_right : Icons.keyboard_arrow_left,
+                          iconSize: 45,
+                        ),
                       ),
-                      width: 1,
-                      spacing: 0.5,
-                      borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), topRight:  Radius.circular(8)),
-                      color: _chartIncomeColor,
-                    )
-                  ],
-                ),
-                Align(                  
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: _userInfoModel.getPrivileges() == EPrivileges.eNone ? 
-                    const SizedBox() :
-                    WidgetHelper.controlButtonWidget(
-                      onTap: exportChartImage, 
-                      normal: _widgetBackgroundColor, 
-                      mouseOver: _widgetBackgroundMouseOverColor,
-                      iconNormal: _widgetForegroundColor,
-                      iconMouseOver: _widgetForegroundMouseOverColor,
-                      icon: Icons.print,
-                      tooltip: "출력",
                     ),
                   ),
-                ),
-                _loadingChartData ? const LoadingIndicator() : const SizedBox()
-              ],
-            )
-          )
-        )
-      ],
+                ],
+              );
+            }
+          );
+        }
+        else {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              datePanelWidget(),
+              chartPanelWidget(),
+            ],
+          );
+        }
+      }
     );
   }
 
@@ -258,6 +232,7 @@ class _ChartPageState extends State<ChartPage> {
     final themeType = _themeModel.getThemeType();
     _layerBackgrondColor = ColorManager.getLayerBackgroundColor(themeType);
     _foregroundColor = ColorManager.getForegroundColor(themeType);
+    _backgroundColor = ColorManager.getBackgroundColor(themeType);
     _chartLabelColor = ColorManager.getChartLabelColor(themeType);
     _chartXAxisColor = ColorManager.getChartXAxisColor(themeType);
     _chartYAxisColor = ColorManager.getChartYAxisColor(themeType);
@@ -275,7 +250,7 @@ class _ChartPageState extends State<ChartPage> {
     );
   }
 
-  void loadChartData(int year, int month) {
+  void loadChartData(int year, int month) {    
     if (!_dateMap.containsKey(year) || (month != -1 && !_dateMap[year]!.contains(month))) {
       setState(() {
         _selectedYear = -1;
@@ -336,5 +311,137 @@ class _ChartPageState extends State<ChartPage> {
     catch (e) {
       showErrorDialog(e.toString());
     }
+  }
+
+  Widget datePanelWidget() {
+    return Container(
+      width: 200,
+      padding: const EdgeInsets.fromLTRB(10, 10, 0, 10),
+      decoration: BoxDecoration(
+        color: _backgroundColor,
+      ),
+      child: _dateNavsLoaded ? DateNavColumn(
+        dateMap: _dateMap, 
+        selectedYear: _selectedYear, 
+        selectedMonth: _selectedMonth,
+        onTap: (year, month) {
+          if (_loadingChartData) return;
+          loadChartData(year, month);
+        }
+      ) : const LoadingIndicator(),   
+    );
+  }
+
+  Widget chartPanelWidget() {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8)
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Stack(
+          children: [
+            SfCartesianChart(
+              key: _chartKey,
+              backgroundColor: _layerBackgrondColor,
+              plotAreaBorderWidth: 0,
+              primaryXAxis: CategoryAxis(
+                labelStyle: _chartLabelTextStyle,
+                axisLine: AxisLine(
+                  color: _chartYAxisColor
+                ),
+                majorGridLines: MajorGridLines(
+                  width: 1,
+                  color: _chartXAxisColor
+                ),
+                majorTickLines: MajorTickLines(
+                  color: _chartXAxisColor
+                )
+              ),
+              primaryYAxis: NumericAxis(
+                numberFormat: NumberFormat.simpleCurrency(locale: "ko_KR"),
+                labelStyle: _chartLabelTextStyle,
+                axisLine: const AxisLine(
+                  color: Colors.transparent
+                ),
+                majorGridLines: MajorGridLines(
+                  width: 1,
+                  color: _chartYAxisColor
+                ),
+                majorTickLines: MajorTickLines(
+                  color: _chartYAxisColor
+                )
+              ),
+              title: ChartTitle(
+                text: _title,
+                textStyle: TextStyle(
+                  color: _foregroundColor
+                )
+              ),
+              legend: Legend(
+                isVisible: true,
+                position: LegendPosition.top,
+                textStyle: TextStyle(
+                  color: _foregroundColor
+                )
+              ),
+              tooltipBehavior: TooltipBehavior(
+                enable: true,
+                tooltipPosition: TooltipPosition.pointer
+              ),
+              series: <ChartSeries<SfChartData, String>> [
+                ColumnSeries(
+                  dataSource: _chartDataList, 
+                  xValueMapper: (SfChartData data, _) => data.date, 
+                  yValueMapper: (SfChartData data, _) => data.income, 
+                  name: "매출",
+                  dataLabelSettings: DataLabelSettings(
+                    isVisible:  true,
+                    textStyle: _foregrundTextStyle
+                  ),
+                  width: 1,
+                  spacing: 0.5,
+                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), topRight:  Radius.circular(8)),                      
+                  color: _chartOutcomeColor,
+                ),
+                ColumnSeries(
+                  dataSource: _chartDataList, 
+                  xValueMapper: (SfChartData data, _) => data.date, 
+                  yValueMapper: (SfChartData data, _) => data.outcome, 
+                  name: "매입",
+                  dataLabelSettings: DataLabelSettings(
+                    isVisible:  true,
+                    textStyle: _foregrundTextStyle
+                  ),
+                  width: 1,
+                  spacing: 0.5,
+                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), topRight:  Radius.circular(8)),
+                  color: _chartIncomeColor,
+                )
+              ],
+            ),
+            Align(                  
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: _userInfoModel.getPrivileges() == EPrivileges.eNone ? 
+                const SizedBox() :
+                ControlButton(
+                  onTap: exportChartImage, 
+                  normal: _widgetBackgroundColor, 
+                  mouseOver: _widgetBackgroundMouseOverColor,
+                  iconNormal: _widgetForegroundColor,
+                  iconMouseOver: _widgetForegroundMouseOverColor,
+                  icon: Icons.print,
+                  tooltip: "출력",
+                ),
+              ),
+            ),
+            _loadingChartData ? const LoadingIndicator() : const SizedBox()
+          ],
+        )
+      )
+    );
   }
 }

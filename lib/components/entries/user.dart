@@ -6,7 +6,6 @@ class User {
   String userId;
   String userPwd;
   EPrivileges priv;
-
   User(this.userId, this.userPwd, this.priv);
 
   User.fromJson(dynamic json) : 

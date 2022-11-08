@@ -1,6 +1,6 @@
 import 'package:daewon_am/components/helpers/color_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
+import 'package:daewon_am/components/widgets/buttons/dialog_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,12 +27,23 @@ class _OkDialogState extends State<OkDialog> {
   late Color _backgroundColor;
   late Color _foregroundColor;
 
+  bool _firstCall = true;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
@@ -84,8 +95,11 @@ class _OkDialogState extends State<OkDialog> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  WidgetHelper.dialogButton(
-                    onPressed: onTap,
+                  DialogButton(
+                    onPressed: () {
+                      if (widget.onPressed != null) widget.onPressed!();
+                      Navigator.of(context).pop();
+                    },
                     label: "확인",
                     normal: _normal,
                     mouseOver: _mouseOver,                    
@@ -100,18 +114,12 @@ class _OkDialogState extends State<OkDialog> {
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
-
     _normal = ColorManager.getWidgetBackgroundColor(themeType);
     _mouseOver = ColorManager.getWidgetBackgroundMouseOverColor(themeType);
     _backgroundColor = ColorManager.getBackgroundColor(themeType);
     _foregroundColor = ColorManager.getForegroundColor(themeType);
-  }
-
-  void onTap() {
-    if (widget.onPressed != null) widget.onPressed!();
-    Navigator.of(context).pop();
   }
 }
 

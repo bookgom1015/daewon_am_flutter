@@ -2,16 +2,20 @@ import 'package:daewon_am/components/dialogs/accounting_data_confirm_dialog.dart
 import 'package:daewon_am/components/dialogs/ok_dialog.dart';
 import 'package:daewon_am/components/entries/accounting_data.dart';
 import 'package:daewon_am/components/enums/privileges.dart';
+import 'package:daewon_am/components/globals/global_theme_settings.dart';
 import 'package:daewon_am/components/helpers/data_manager.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/helpers/excel_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
-import 'package:daewon_am/components/widgets/presets/accounting_data_grid.dart';
-import 'package:daewon_am/components/widgets/presets/data_grid_summary.dart';
+import 'package:daewon_am/components/widgets/buttons/mouse_reaction_icon_button.dart';
+import 'package:daewon_am/components/widgets/data_grids/accounting_data_grid.dart';
+import 'package:daewon_am/components/widgets/data_grids/accounting_data_grid_summary.dart';
+import 'package:daewon_am/components/widgets/buttons/control_button.dart';
 import 'package:daewon_am/components/widgets/presets/date_nav_column.dart';
 import 'package:daewon_am/components/widgets/presets/loading_indicator.dart';
+import 'package:daewon_am/components/widgets/presets/search_bar.dart';
+import 'package:daewon_am/components/widgets/buttons/searching_date_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -23,11 +27,12 @@ class ReceivablePage extends StatefulWidget {
   State<StatefulWidget> createState() => _ReceivablePageState();
 }
 
-class _ReceivablePageState extends State<ReceivablePage> {
+class _ReceivablePageState extends State<ReceivablePage> with SingleTickerProviderStateMixin {
   late ThemeSettingModel _themeModel;
   late UserInfoModel _userInfoModel;
 
   late Color _foregroundColor;
+  late Color _backgroundColor;
   late Color _layerBackgrondColor;
   late Color _widgetBackgroundColor;
   late Color _widgetBackgroundMouseOverColor;
@@ -56,12 +61,39 @@ class _ReceivablePageState extends State<ReceivablePage> {
 
   bool _firstCall = true;
 
+  late AnimationController _controller;
+  late Animation<double> _curveAnimation;
+  late Animation<double> _animation;
+
+  bool _forward = true;
+
   @override
   void initState() {
     super.initState();
     final now = DateTime.now();
     _beginDate = DateTime(now.year, now.month, 1);
     _endDate = now;
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300)
+    );
+    _curveAnimation = CurvedAnimation(
+      parent: _controller, 
+      curve: Curves.easeOutQuart
+    );
+    _animation = Tween<double>(
+      // 
+      begin: 0.0,
+      end: 200.0
+    ).animate(_curveAnimation);
+    _controller.addStatusListener((status) { 
+      if (status.name == "completed") {
+        _forward = false;
+      }
+      else if (status.name == "dismissed") {
+        _forward = true;
+      }
+    });
   }
 
   @override  
@@ -87,87 +119,72 @@ class _ReceivablePageState extends State<ReceivablePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 200,
-          padding: const EdgeInsets.fromLTRB(10, 10, 5, 10),
-          decoration: const BoxDecoration(
-            color: Colors.transparent
-          ),
-          child: _dateNavsLoaded ? DateNavColumn(
-            dateMap: _dateMap, 
-            selectedYear: _selectedYear, 
-            selectedMonth: _selectedMonth,
-            onTap: (year, month) => loadAccountingData(year, month)
-          ) : const LoadingIndicator(),   
-        ),
-        Expanded(
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(5, 10, 10, 10),
-            decoration: BoxDecoration(
-              color: _layerBackgrondColor,
-              borderRadius: BorderRadius.circular(8)
-            ),
-            clipBehavior: Clip.hardEdge,
-            child: Column(
-              children: [
-                WidgetHelper.searchBarWidget(
-                  textEditingController: _searchBarTextEditingController, 
-                  foregroundColor: _foregroundColor,
-                  cursorColor: _cursorColor,
-                  underlineColor: _underlineColor,
-                  underlineFocusedColor: _underlineFocusedColor,
-                  iconNormal: _widgetForegroundColor,
-                  iconMouseOver: _widgetForegroundMouseOverColor,
-                  onTap: searchAccountingData
-                ),
-                WidgetHelper.searchingDateWidget(
-                  beginDate: _beginDate,
-                  endDate: _endDate,
-                  onChangedBeginDate: (date) {
-                    if (date == null) return;
-                    setState(() {
-                      _beginDate = date;
-                    });
-                  },
-                  onChangedEndDate: (date) {
-                    if (date == null) return;
-                    setState(() {
-                      _endDate = date;
-                    });
-                  },
-                  color: _widgetForegroundColor,
-                ),
-                Container(
-                  height: 40,
-                  color: Colors.transparent,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: _controlButtonWidgets,
-                  ),
-                ),
-                Expanded(
-                  child: Stack(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 1200) {
+          return AnimatedBuilder(
+            animation: _controller, 
+            builder: (context, _) {
+              return Stack(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      AccountingDataGrid(
-                        dataList: _dataList,
-                        controller: _dataGridController,
+                      Container(
+                        width: _animation.value,
+                        clipBehavior: Clip.hardEdge,
+                        decoration: const BoxDecoration(),
+                        child: datePanelWidget(),
                       ),
-                      _loadingDataList ? const LoadingIndicator() : const SizedBox()
+                      dataPanelWidget(),
                     ],
                   ),
-                ),
-                Container(
-                  height: 40,
-                  color: _widgetBackgroundColor,
-                  child: DataGridSummary(dataList: _dataList),
-                ),
-              ],
-            ),
-          )
-        )
-      ],
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Transform.translate(
+                      offset: Offset(_animation.value, 0),
+                      child: Opacity(
+                        opacity: 0.8,
+                        child: MouseReactionIconButton(
+                          onTap: () {
+                            if (_forward) {
+                              _controller.forward();
+                            }
+                            else {
+                              _controller.reverse();
+                            }
+                          },
+                          width: 45,
+                          height: 45,
+                          shape: BoxShape.circle,
+                          margin: const EdgeInsets.only(left: 15),
+                          duration: colorChangeDuration,
+                          curve: colorChangeCurve,
+                          normal: _widgetBackgroundColor,
+                          mouseOver: _widgetBackgroundMouseOverColor,
+                          iconNormal: _widgetForegroundColor,
+                          iconMouseOver: _widgetForegroundMouseOverColor,
+                          icon: _forward ? Icons.keyboard_arrow_right : Icons.keyboard_arrow_left,
+                          iconSize: 45,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+          );
+        }
+        else {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              datePanelWidget(),
+              dataPanelWidget(),
+            ],
+          );
+        }
+      }
     );
   }  
 
@@ -185,6 +202,7 @@ class _ReceivablePageState extends State<ReceivablePage> {
     // 컬러 불러오기
     final themeType = _themeModel.getThemeType();
     _foregroundColor = ColorManager.getForegroundColor(themeType);
+    _backgroundColor = ColorManager.getBackgroundColor(themeType);
     _layerBackgrondColor = ColorManager.getLayerBackgroundColor(themeType);
     _widgetBackgroundColor = ColorManager.getWidgetBackgroundColor(themeType);
     _widgetBackgroundMouseOverColor = ColorManager.getWidgetBackgroundMouseOverColor(themeType);
@@ -375,8 +393,95 @@ class _ReceivablePageState extends State<ReceivablePage> {
     }
   }
 
+  Widget datePanelWidget() {
+    return Container(
+      width: 200,
+      padding: const EdgeInsets.fromLTRB(10, 10, 0, 10),
+      decoration: BoxDecoration(
+        color: _backgroundColor,
+      ),
+      child: _dateNavsLoaded ? DateNavColumn(
+        dateMap: _dateMap, 
+        selectedYear: _selectedYear, 
+        selectedMonth: _selectedMonth,
+        onTap: (year, month) {
+          if (_loadingDataList) return;
+          loadAccountingData(year, month);
+        }
+      ) : const LoadingIndicator(),   
+    );
+  }
+
+  Widget dataPanelWidget() {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: _layerBackgrondColor,
+          borderRadius: BorderRadius.circular(8)
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Column(
+          children: [
+            SearchBar(
+              controller: _searchBarTextEditingController, 
+              foregroundColor: _foregroundColor,
+              cursorColor: _cursorColor,
+              underlineColor: _underlineColor,
+              underlineFocusedColor: _underlineFocusedColor,
+              iconNormal: _widgetForegroundColor,
+              iconMouseOver: _widgetForegroundMouseOverColor,
+              onTap: searchAccountingData
+            ),
+            SearchingDateButton(
+              beginDate: _beginDate,
+              endDate: _endDate,
+              onChangedBeginDate: (date) {
+                if (date == null) return;
+                setState(() {
+                  _beginDate = date;
+                });
+              },
+              onChangedEndDate: (date) {
+                if (date == null) return;
+                setState(() {
+                  _endDate = date;
+                });
+              },
+              color: _widgetForegroundColor,
+            ),
+            Container(
+              height: 40,
+              color: Colors.transparent,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: _controlButtonWidgets,
+              ),
+            ),
+            Expanded(
+              child: Stack(
+                children: [
+                  AccountingDataGrid(
+                    dataList: _dataList,
+                    controller: _dataGridController,
+                  ),
+                  _loadingDataList ? const LoadingIndicator() : const SizedBox()
+                ],
+              ),
+            ),
+            Container(
+              height: 40,
+              color: _widgetBackgroundColor,
+              child: AccountingDataGridSummary(dataList: _dataList),
+            ),
+          ],
+        ),
+      )
+    );
+  }
+
   Widget controlButtonWidget(void Function() onTap, IconData icon, String tooltip) {
-    return WidgetHelper.controlButtonWidget(
+    return ControlButton(
       onTap: onTap,
       normal: _widgetBackgroundColor, 
       mouseOver: _widgetBackgroundMouseOverColor,

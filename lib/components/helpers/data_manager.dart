@@ -1,6 +1,6 @@
 import 'package:daewon_am/components/entries/accounting_data.dart';
 import 'package:daewon_am/components/entries/chart_data.dart';
-import 'package:daewon_am/components/helpers/http_helper.dart';
+import 'package:daewon_am/components/helpers/http_manager.dart';
 
 class DataManager {
   static void loadDates({
@@ -10,7 +10,7 @@ class DataManager {
     bool receivable = false,
     bool yearly = false,
   }) {
-    final future = HttpHelper.getDates(token: token, receivable: receivable);
+    final future = HttpManager.getDates(token: token, receivable: receivable);
     future.then((dates) {
       Map<int, Set<int>> dateMap = <int, Set<int>>{};
       if (yearly) dateMap[-1] = {};
@@ -37,7 +37,7 @@ class DataManager {
     required void Function(String) onError,
     bool receivable = false,
   }) {
-    final future = HttpHelper.getAccountingData(
+    final future = HttpManager.getAccountingData(
       token: token,
       year: year, 
       month: month, 
@@ -60,7 +60,7 @@ class DataManager {
     required void Function(String) onError,
     bool receivable = false,
   }) {    
-    final future = HttpHelper.getAccountingDataAsSearching(
+    final future = HttpManager.getAccountingDataAsSearching(
       token: token,
       begin: begin, 
       end: end, 
@@ -81,7 +81,7 @@ class DataManager {
     required void Function() onFinised,
     required void Function(String) onError,
   }) {
-    final future = HttpHelper.addAccountingData(token: token, data: data);
+    final future = HttpManager.addAccountingData(token: token, data: data);
     future.then((value) {
       onFinised();
     })
@@ -96,7 +96,7 @@ class DataManager {
     required void Function() onFinised,
     required void Function(String) onError,
   }) {
-    final future = HttpHelper.addAccountingDataList(token: token, dataList: dataList);
+    final future = HttpManager.addAccountingDataList(token: token, dataList: dataList);
     future.then((value) {
       onFinised();
     })
@@ -111,7 +111,7 @@ class DataManager {
     required void Function() onFinised,
     required void Function(String err) onError,
   }) {
-    final future = HttpHelper.editAccountingData(token: token, data: data);
+    final future = HttpManager.editAccountingData(token: token, data: data);
     future.then((value) {
       onFinised();
     })
@@ -126,7 +126,7 @@ class DataManager {
     required void Function() onFinised,
     required void Function(String) onError,
   }) {
-    final future = HttpHelper.removeAccountingData(token: token, data: data);
+    final future = HttpManager.removeAccountingData(token: token, data: data);
     future.then((value) {
       onFinised();
     })
@@ -141,7 +141,7 @@ class DataManager {
     required void Function() onFinised,
     required void Function(String) onError,
   }) {
-    final future = HttpHelper.removeAccountingDataList(token: token, dataList: dataList);
+    final future = HttpManager.removeAccountingDataList(token: token, dataList: dataList);
     future.then((value) {
       onFinised();
     })
@@ -158,7 +158,7 @@ class DataManager {
     required void Function(String) onError,
     bool receivable = false,
   }) {
-    final future = HttpHelper.getGraphData(token: token, year: year, month: month);      
+    final future = HttpManager.getGraphData(token: token, year: year, month: month);      
     future.then((list) {
       onFinished(list);
     })

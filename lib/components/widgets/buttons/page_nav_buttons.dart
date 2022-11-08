@@ -23,7 +23,6 @@ class PageNavButton {
   double iconSize;
   String tooltip;
   int index;
-
   PageNavButton(this.icon, this.iconSize, this.tooltip, this.index);
 }
 

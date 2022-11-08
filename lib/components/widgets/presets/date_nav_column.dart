@@ -1,12 +1,15 @@
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/widgets/buttons/date_nav_button.dart';
+import 'package:daewon_am/components/widgets/effects/fade_in_out.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class DateNavColumn extends StatefulWidget {
+  static const double fadeLength = 10.0;
+  static const double dateNavHeight = 40.0;
+  static const double dateNavVerticalMargin = 10.0;  
   final Map<int, Set<int>> dateMap;
   final int selectedYear;
   final int selectedMonth;
@@ -30,10 +33,6 @@ class _DateNavColumnState extends State<DateNavColumn> {
 
   late Color _backgroundColor;
   late Color _backgroundTransparentColor;
-
-  final double _fadeLength = 10;
-  final double _dateNavHeight = 40;
-  final double _dateNavVerticalMargin = 10;  
 
   bool _firstCall = true;
 
@@ -59,22 +58,22 @@ class _DateNavColumnState extends State<DateNavColumn> {
     return Stack(
       children: [
         ListView.builder(
-          padding: EdgeInsets.only(top: _fadeLength),
+          padding: const EdgeInsets.only(top: DateNavColumn.fadeLength),
           itemCount: widget.dateMap.keys.length,
           itemBuilder: (_, index) {
             final year = widget.dateMap.keys.elementAt(index);
             return dateNavsWidget(year);
           }
         ),
-        WidgetHelper.fadeOutWidget(
-          length: _fadeLength, 
+        FadeInOut(
+          length: DateNavColumn.fadeLength, 
           fromColor: _backgroundColor, 
           toColor: _backgroundTransparentColor
         ),
         Align(
           alignment: Alignment.bottomCenter,
-          child: WidgetHelper.fadeOutWidget(
-            length: _fadeLength, 
+          child: FadeInOut(
+            length: DateNavColumn.fadeLength, 
             fromColor: _backgroundTransparentColor, 
             toColor: _backgroundColor
           ),
@@ -104,7 +103,8 @@ class _DateNavColumnState extends State<DateNavColumn> {
         AnimatedContainer(
           duration: dateNavSizeChangeDuration,
           curve: dateNavSizeChangeCurve,
-          height: widget.selectedYear == year ? monthSet.length * (_dateNavHeight + _dateNavVerticalMargin) : 0,
+          height: widget.selectedYear == year ? 
+            monthSet.length * (DateNavColumn.dateNavHeight + DateNavColumn.dateNavVerticalMargin) : 0,
           decoration: const BoxDecoration(),
           clipBehavior: Clip.hardEdge,
           child: Stack(
@@ -127,8 +127,8 @@ class _DateNavColumnState extends State<DateNavColumn> {
               ),
               Align(
                 alignment: Alignment.bottomCenter,
-                child: WidgetHelper.fadeOutWidget(
-                  length: _dateNavVerticalMargin,
+                child: FadeInOut(
+                  length: DateNavColumn.dateNavVerticalMargin,
                   fromColor: _backgroundTransparentColor,
                   toColor: _backgroundColor
                 ),

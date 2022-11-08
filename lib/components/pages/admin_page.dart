@@ -1,16 +1,14 @@
-import 'dart:io';
-
 import 'package:daewon_am/components/dialogs/ok_cancel_dialog.dart';
 import 'package:daewon_am/components/dialogs/ok_dialog.dart';
 import 'package:daewon_am/components/dialogs/user_create_dialog.dart';
 import 'package:daewon_am/components/entries/user.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
-import 'package:daewon_am/components/helpers/http_helper.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
+import 'package:daewon_am/components/helpers/http_manager.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
+import 'package:daewon_am/components/widgets/buttons/control_button.dart';
 import 'package:daewon_am/components/widgets/presets/loading_indicator.dart';
-import 'package:daewon_am/components/widgets/presets/user_data_grid.dart';
+import 'package:daewon_am/components/widgets/data_grids/user_data_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -89,7 +87,7 @@ class _AdminPageState extends State<AdminPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      WidgetHelper.controlButtonWidget(
+                      ControlButton(
                         onTap: addUser,
                         normal: _widgetBackgroundColor, 
                         mouseOver: _widgetBackgroundMouseOverColor,
@@ -98,7 +96,7 @@ class _AdminPageState extends State<AdminPage> {
                         icon: Icons.add,
                         tooltip: "추가",
                       ),
-                      WidgetHelper.controlButtonWidget(
+                      ControlButton(
                         onTap: removeUser,
                         normal: _widgetBackgroundColor, 
                         mouseOver: _widgetBackgroundMouseOverColor,
@@ -190,7 +188,7 @@ class _AdminPageState extends State<AdminPage> {
   }
 
   void loadUsers() {
-    final userListFuture = HttpHelper.getUsers(_userInfoModel.getToken());
+    final userListFuture = HttpManager.getUsers(_userInfoModel.getToken());
     userListFuture.then((userList) {
       _userList = userList; 
       if (!mounted) return;
@@ -206,7 +204,7 @@ class _AdminPageState extends State<AdminPage> {
       themeModel: _themeModel, 
       onPressed: (user) {
         invalidate();
-        final future = HttpHelper.addUser(token: _userInfoModel.getToken(), user: user);
+        final future = HttpManager.addUser(token: _userInfoModel.getToken(), user: user);
         future.then((value) {
           loadUsers();
         })
@@ -235,7 +233,7 @@ class _AdminPageState extends State<AdminPage> {
         invalidate();
         final dataCell = row.getCells().firstWhere((element) => element.columnName == "user");
         final selectedUser = dataCell.value as User;
-        final future = HttpHelper.removeUser(token: _userInfoModel.getToken(), user: selectedUser);
+        final future = HttpManager.removeUser(token: _userInfoModel.getToken(), user: selectedUser);
         future.then((value) {
           loadUsers();
         })

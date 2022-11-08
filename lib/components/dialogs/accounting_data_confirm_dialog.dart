@@ -1,9 +1,7 @@
-import 'package:daewon_am/components/globals/global_theme_settings.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
-import 'package:daewon_am/components/widgets/buttons/mouse_reaction_button.dart';
-import 'package:daewon_am/components/widgets/date_pickers/simple_date_picker.dart';
+import 'package:daewon_am/components/widgets/buttons/date_picker_button.dart';
+import 'package:daewon_am/components/widgets/buttons/dialog_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,21 +24,25 @@ class _AccountingDataConfirmDialogState extends State<AccountingDataConfirmDialo
   late Color _mouseOver;
   late Color _foregroundColor;
 
-  late DateTime _selectedDate;
+  DateTime _selectedDate = DateTime.now();
 
-  @override
-  void initState() {
-    super.initState();
-
-    _selectedDate = DateTime.now();
-  }
+  bool _firstCall = true;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _themeModel = context.watch<ThemeSettingModel>();
+    if (_firstCall) {
+      _firstCall = false;
+      _themeModel = context.watch<ThemeSettingModel>();
+      _themeModel.addListener(onThemeModelChanged);
+      onThemeModelChanged();
+    }
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    super.dispose();
   }
 
   @override
@@ -81,7 +83,7 @@ class _AccountingDataConfirmDialogState extends State<AccountingDataConfirmDialo
                     ),
                   ),
                   Expanded(
-                    child: SimpleDatePicker(
+                    child: DatePickerButton(
                       initialDate: _selectedDate,
                       onChangedDate: (date) {
                         if (date == null) return;
@@ -100,7 +102,7 @@ class _AccountingDataConfirmDialogState extends State<AccountingDataConfirmDialo
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  WidgetHelper.dialogButton(
+                  DialogButton(
                     onPressed: () {
                       widget.onDateChagned(_selectedDate);
                       Navigator.of(context).pop();
@@ -111,7 +113,7 @@ class _AccountingDataConfirmDialogState extends State<AccountingDataConfirmDialo
                     fontColor: _foregroundColor,
                   ),                  
                   const  SizedBox(width: 5),
-                  WidgetHelper.dialogButton(
+                  DialogButton(
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
@@ -129,9 +131,8 @@ class _AccountingDataConfirmDialogState extends State<AccountingDataConfirmDialo
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     final themeType = _themeModel.getThemeType();
-
     _layerBackgroundColor = ColorManager.getLayerBackgroundColor(themeType);
     _normal = ColorManager.getWidgetBackgroundColor(themeType);
     _mouseOver = ColorManager.getWidgetBackgroundMouseOverColor(themeType);

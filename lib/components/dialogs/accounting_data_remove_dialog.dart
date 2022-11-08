@@ -2,9 +2,9 @@
 import 'package:daewon_am/components/dialogs/ok_dialog.dart';
 import 'package:daewon_am/components/entries/accounting_data.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
-import 'package:daewon_am/components/helpers/widget_helper.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
-import 'package:daewon_am/components/widgets/presets/accounting_data_grid.dart';
+import 'package:daewon_am/components/widgets/buttons/dialog_button.dart';
+import 'package:daewon_am/components/widgets/data_grids/accounting_data_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -36,8 +36,15 @@ class _AccountingDataRemoveDialogState extends State<AccountingDataRemoveDialog>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _themeModel = context.watch<ThemeSettingModel>();
+    _themeModel.addListener(onThemeModelChanged);
+    onThemeModelChanged();
+  }
 
-    loadColors();
+  @override
+  void dispose() {
+    _themeModel.removeListener(onThemeModelChanged);
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -82,7 +89,7 @@ class _AccountingDataRemoveDialogState extends State<AccountingDataRemoveDialog>
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  WidgetHelper.dialogButton(
+                  DialogButton(
                     onPressed: () {
                       if (_controller.selectedRows.isEmpty) {
                         showOkDialog(
@@ -108,7 +115,7 @@ class _AccountingDataRemoveDialogState extends State<AccountingDataRemoveDialog>
                     fontColor: _foregroundColor,
                   ),                  
                   const  SizedBox(width: 5),
-                  WidgetHelper.dialogButton(
+                  DialogButton(
                     onPressed: () { Navigator.of(context).pop(); },
                     label: "취소",
                     normal: _normal,
@@ -124,7 +131,7 @@ class _AccountingDataRemoveDialogState extends State<AccountingDataRemoveDialog>
     );
   }
 
-  void loadColors() {
+  void onThemeModelChanged() {
     var themeType = _themeModel.getThemeType();
     _layerBackgroundColor = ColorManager.getLayerBackgroundColor(themeType);
     _normal = ColorManager.getWidgetBackgroundColor(themeType);

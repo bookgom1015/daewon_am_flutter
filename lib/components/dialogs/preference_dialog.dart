@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class PreferenceDialog extends StatefulWidget {
+  static const double titleBarHeight = 50.0;
+
   const PreferenceDialog({Key? key}) : super(key: key);
 
   @override
@@ -32,7 +34,7 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
   late Color _iconNormal;
   late Color _iconMouseOver;
 
-  late PageController _pageController;
+  final PageController _pageController = PageController();
 
   final GlobalKey _dialogKey = GlobalKey();
   double _navWidth = 0;
@@ -40,14 +42,11 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
   late List<Widget> _pageList;
   late List<String> _titleList;
 
-  final double _titleBarHeight = 50;
-
   bool _firstCall = true;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
     _pageList = [
       const ThemeSettingPage(),
     ];
@@ -134,7 +133,7 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
     return AnimatedContainer(
       duration: colorChangeDuration,
       curve: colorChangeCurve,
-      height: _titleBarHeight,
+      height: PreferenceDialog.titleBarHeight,
       decoration: BoxDecoration(
         color: _backgroundColor,
         borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8))
@@ -205,7 +204,7 @@ class _PreferenceDialogState extends State<PreferenceDialog> {
               ),
             ),
             body: Padding(
-              padding: EdgeInsets.only(top: _titleBarHeight),
+              padding: const EdgeInsets.only(top: PreferenceDialog.titleBarHeight),
               child: PageView.builder(
                 controller: _pageController,   
                 itemCount: _pageList.length,

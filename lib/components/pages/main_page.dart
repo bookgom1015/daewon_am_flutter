@@ -7,7 +7,7 @@ import 'package:daewon_am/components/enums/privileges.dart';
 import 'package:daewon_am/components/enums/theme_types.dart';
 import 'package:daewon_am/components/globals/global_routes.dart';
 import 'package:daewon_am/components/globals/global_theme_settings.dart';
-import 'package:daewon_am/components/helpers/http_helper.dart';
+import 'package:daewon_am/components/helpers/http_manager.dart';
 import 'package:daewon_am/components/helpers/setting_manager.dart';
 import 'package:daewon_am/components/models/page_control_model.dart';
 import 'package:daewon_am/components/models/user_info_model.dart';
@@ -23,7 +23,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:daewon_am/components/helpers/color_manager.dart';
 import 'package:daewon_am/components/models/theme_setting_model.dart';
-import 'package:daewon_am/components/widgets/presets/page_nav_buttons.dart';
+import 'package:daewon_am/components/widgets/buttons/page_nav_buttons.dart';
 import 'package:daewon_am/components/widgets/buttons/preference_button.dart';
 import 'package:daewon_am/components/widgets/presets/window_buttons.dart';
 import 'package:yaml/yaml.dart';
@@ -168,12 +168,12 @@ class _MainPageState extends State<MainPage> {
   }
 
   void checkLastVersion() {
-    final lastVerFuture = HttpHelper.getLastVersion();
+    final lastVerFuture = HttpManager.getLastVersion();
     lastVerFuture.then((lastVer) {
       final yamlFuture = rootBundle.loadString("pubspec.yaml");
       yamlFuture.then((yamlStr) {
         final yaml = loadYaml(yamlStr);
-        final currVer = yaml["version"];
+        final currVer = yaml["version"].toString();
         if (lastVer != currVer) {
           final exeFileName = Platform.resolvedExecutable;
           final end = exeFileName.lastIndexOf("\\");
